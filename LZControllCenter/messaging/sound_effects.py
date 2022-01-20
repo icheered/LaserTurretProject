@@ -1,3 +1,5 @@
+"""codeauthor:: Brand Hauser"""
+
 import random
 
 from pydub import AudioSegment

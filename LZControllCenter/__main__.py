@@ -1,3 +1,5 @@
+"""codeauthor:: Brand Hauser"""
+
 from .targeting.targeter import Targeter
 from .data.values import Status, Direction
 import time

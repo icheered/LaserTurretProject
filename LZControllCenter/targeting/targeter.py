@@ -1,3 +1,5 @@
+"""codeauthor:: Brand Hauser"""
+
 from ..messaging.output_to_turret import *
 from ..data.values import Status, Direction
 from .tracker import *

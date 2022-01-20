@@ -1,4 +1,5 @@
 """
+codeauthor:: Brand Hauser
 Modified from https://pysource.com/2021/01/28/object-tracking-with-opencv-and-python/
 """
 

@@ -1,3 +1,4 @@
 opencv-python~=4.5.4.60
 numpy~=1.21.4
 pydub~=0.25.1
+pyserial~=3.5   #  https://pyserial.readthedocs.io/en/latest/shortintro.html
