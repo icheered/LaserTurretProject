@@ -11,7 +11,6 @@ int incomingByte[3];
 int angle, speed, count; 
 int countLim, nextCountLim;
 
-bool enable; // false = speed, true = angle;
 int nextOutput, nextDir, direction, nextSpeed;
 
 volatile short setValue;
@@ -53,19 +52,72 @@ void loop() {
 
 // determine if we should decelerate to avoid going over limit
 bool approachingLimits() {
+  // if stopped, return false
+  if (speed == 0) {
+    return false;
+  }
+  // if going in the opposite direction, return false
+  if (direction == 1 && angle < 0) {
+    return false;
+  }
+  if (direction == 0 && angle > 1) {
+    return false;
+  }
 
+  // calculate amount of steps needed to stop, and see if we need to stop
+  int stepsLeft = abs(angle) - maxAngle;
+  if ((abs(speed) / maxAcceleration) +1 >= stepsLeft) {
+    return true;
+  } 
 }
 
 
 // Maximum deceleration function
-void maxAccelerate(int direction) {
+// int 0 means ccw, 1 means cw
+void maxAccelerate(int rotDirection) {
+  if (rotDirection == 1) {
+    nextSpeed = (abs(speed + maxAcceleration) <= maxSpeed) ? speed + maxAcceleration : maxSpeed;
+  } else if (rotDirection == 0) {
+    nextSpeed = (abs(speed - maxAcceleration) <= maxSpeed) ? speed - maxAcceleration : -maxSpeed;
+  }
+  nextDir = nextSpeed > 0 ? 1 : 0;
+  nextCountLim = nextSpeed != 0 ? 2550/abs(nextSpeed) : 2550/5;
+}
 
+void stopToZero() {
+  if (direction == 1) {
+    nextSpeed = (speed - maxAcceleration) > 0 ? speed - maxAcceleration : 0;
+  } else if (direction == 0) {
+    nextSpeed = (speed + maxAcceleration) < 0 ? speed - maxAcceleration : 0;
+  }
+  nextDir = direction;
+  nextCountLim = nextSpeed != 0 ? 2550/abs(nextSpeed) : 2550/5;
+}
+
+void accelerateToValue(int accelValue) {
+  nextSpeed = accelValue;
+  nextDir = accelValue > 0 ? 1 : 0;
+  nextCountLim = 2550/(abs(nextSpeed));
 }
 
 
 //Speed control implementation 
 void speedControl() {
-
+  setValue = setValue <= 255 ? setValue : 255;
+  setValue = setValue >= -255 ? setValue : -255;
+  if (abs(setValue) < 5) {
+    stopToZero();
+  }
+  else if (abs(setValue - speed) > maxAcceleration) {
+    if ((setValue - speed) > 0) {
+      maxAccelerate(1);
+    } else if ((setValue - speed) < 0) {
+      maxAccelerate(0);
+    }
+  }
+  else {
+    accelerateToValue(setValue);
+  }
 }
 
 
@@ -93,11 +145,12 @@ ISR(TIMER2_COMPA_vect) {
   digitalWrite(pulsePin, nextOutput);
   digitalWrite(dirPin, nextDir);
   // reset counter if limit is achieved, and set next output to HIGH
-  if (count >= countLim && enable == true) {
-    Serial.println(setValue);
+  if (count >= countLim) {
+    //Serial.println(setValue);
     count = 0;
     countLim = nextCountLim;
-    nextOutput = 1;
+    // check to prevent motor pulse if allready standing still
+    nextOutput = ((speed == nextSpeed) && (nextSpeed == 0)) ? 0 : 1;
     speed = nextSpeed;
     direction = nextDir;
     angle++;
@@ -106,12 +159,10 @@ ISR(TIMER2_COMPA_vect) {
     // write 0 next interrupt if not taking a step
     nextOutput = 0;
   }
-  // calculate steps left until hitting limit
-  int stepsLeft = abs(angle) - maxAngle;
   // evaluate if needing to break due to hitting limit
-  if (approachingLimits()) {
-    maxAccelerate(0);
-  } else if (opMode == 0) { // Speed control
+  /*if (approachingLimits()) {
+    stopToZero();
+  } else*/ if (opMode == 0) { // Speed control
     speedControl();
   } else if (opMode == 1) { // angle control
     angleControlRel();
