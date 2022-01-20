@@ -52,6 +52,19 @@ void loop() {
 
 // determine if we should decelerate to avoid going over limit
 bool approachingLimits() {
+  // calculate steps left
+  int stepsLeft = maxAngle - abs(angle);
+  // check if allready at max
+  if (stepsLeft <= 0) {
+    if (angle > 0 && setValue < 0) {
+      return false;
+    } else if (angle < 0 && setValue > 0) {
+      return false;
+    } else {
+      //Serial.println(setValue);
+      return true;
+    }
+  } 
   // if stopped, return false
   if (speed == 0) {
     return false;
@@ -63,9 +76,7 @@ bool approachingLimits() {
   if (direction == 0 && angle > 1) {
     return false;
   }
-
-  // calculate amount of steps needed to stop, and see if we need to stop
-  int stepsLeft = abs(angle) - maxAngle;
+  // see if we need to stop / slow down
   if ((abs(speed) / maxAcceleration) +1 >= stepsLeft) {
     return true;
   } 
@@ -88,7 +99,7 @@ void stopToZero() {
   if (direction == 1) {
     nextSpeed = (speed - maxAcceleration) > 0 ? speed - maxAcceleration : 0;
   } else if (direction == 0) {
-    nextSpeed = (speed + maxAcceleration) < 0 ? speed - maxAcceleration : 0;
+    nextSpeed = (speed + maxAcceleration) < 0 ? speed + maxAcceleration : 0;
   }
   nextDir = direction;
   nextCountLim = nextSpeed != 0 ? 2550/abs(nextSpeed) : 2550/5;
@@ -151,18 +162,20 @@ ISR(TIMER2_COMPA_vect) {
     countLim = nextCountLim;
     // check to prevent motor pulse if allready standing still
     nextOutput = ((speed == nextSpeed) && (nextSpeed == 0)) ? 0 : 1;
+    if (!((speed == nextSpeed) && (nextSpeed == 0))) {
+      angle = (nextDir == 1) ? angle + 1 : angle - 1;
+    }
     speed = nextSpeed;
     direction = nextDir;
-    angle++;
     //Serial.println(speed);
   } else {
     // write 0 next interrupt if not taking a step
     nextOutput = 0;
   }
   // evaluate if needing to break due to hitting limit
-  /*if (approachingLimits()) {
+  if (approachingLimits()) {
     stopToZero();
-  } else*/ if (opMode == 0) { // Speed control
+  } else if (opMode == 0) { // Speed control
     speedControl();
   } else if (opMode == 1) { // angle control
     angleControlRel();
