@@ -12,7 +12,7 @@ def callback(data, addr, ctrl):
     if data < 0:  # NEC protocol sends repeat codes.
         print("Repeat code.")
     else:
-        print("Data {:02x} Addr {:04x}".format(data, addr))
+        print("data {:02x} Addr {:04x}".format(data, addr))
 
 
 rx = NEC_8(Pin(32, Pin.IN), callback)
