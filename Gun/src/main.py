@@ -1,5 +1,3 @@
-# main.py
-
 import time
 
 import machine
