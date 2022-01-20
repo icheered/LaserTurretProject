@@ -14,8 +14,8 @@ int countLim, nextCountLim;
 bool enable; // false = speed, true = angle;
 int nextOutput, nextDir, direction, nextSpeed;
 
-volatile int setValue;
-volatile bool opMode = false;
+volatile short setValue;
+volatile byte opMode;
 
 void setup() {
   // put your setup code here, to run once:
@@ -43,12 +43,41 @@ void loop() {
       incomingByte[i] = Serial.read();
     }
     // check operation mode (speed or absolute angle)
-    if (incomingByte[0] == 1) opMode = true;
-    if (incomingByte[0] == 0) opMode = false;
+    opMode = incomingByte[0];
+
     // retreive send value (16 bits)
     setValue = (incomingByte[1]<<8) + (incomingByte[2]); 
     Serial.println(setValue);
   }
+}
+
+// determine if we should decelerate to avoid going over limit
+bool approachingLimits() {
+
+}
+
+
+// Maximum deceleration function
+void maxAccelerate(int direction) {
+
+}
+
+
+//Speed control implementation 
+void speedControl() {
+
+}
+
+
+// Angle control implementation
+void angleControlAbs() {
+
+}
+
+
+// Angle control implementation relative
+void angleControlRel() {
+
 }
 
 
@@ -59,7 +88,7 @@ void loop() {
 // 6.25Khz timer interrupt
 ISR(TIMER2_COMPA_vect) {
   // increment iteration counter
-  count = count + 1;
+  count++;
   // write current output values to pins
   digitalWrite(pulsePin, nextOutput);
   digitalWrite(dirPin, nextDir);
@@ -80,55 +109,13 @@ ISR(TIMER2_COMPA_vect) {
   // calculate steps left until hitting limit
   int stepsLeft = abs(angle) - maxAngle;
   // evaluate if needing to break due to hitting limit
-  if ((speed/(stepsLeft)) >= maxAcceleration || (stepsLeft == 0 && speed !=0) || stepsLeft == 1) {
-    // set next speed
-    if ((speed - maxAcceleration) > 0) {
-      nextSpeed = speed-maxAcceleration;
-      nextCountLim = 2550/abs(nextSpeed);
-      enable = true;
-    } else {
-      enable = false;
-      speed = 0;
-    }
-  } else if (opMode == false) { // Speed control
-    // check if speed is too small
-      if (abs(setValue - speed) > maxAcceleration) { // acceleration / deceleration limiter
-      // set max acceleration to 40 Hz and check direction
-      nextSpeed = ((setValue - speed) > 0) ? (speed + maxAcceleration) : (speed-maxAcceleration);
-      // Set direction
-      nextDir = (nextSpeed) > 0 ? 1 : 0;
-      // calculate next count limit for speed
-      nextCountLim = 2550/abs(nextSpeed);
-      enable = true;
-    } else if (abs(setValue) < 5) {
-      enable = false;
-      speed = 0;
-    } else {
-      enable = true;
-      nextSpeed = setValue;
-      nextDir = (nextSpeed) > 0 ? 0 : 1;
-      nextCountLim = 2550/abs(nextSpeed);
-      //Serial.println(nextSpeed);
-    }
-  } else if (opMode == true) { // angle control
-    int stepsLeft = abs(setValue - angle);
-    if (setValue - angle < 0 && direction == 1) {
-      // need to change direction
-      if ((speed - maxAcceleration) > 0) {
-        
-      }
-    } else {
-      // going into right direction allready
-      // Check if we have to decelerate
-      if ((speed/(stepsLeft+1)) > maxAcceleration) {
-        // set next speed
-        nextSpeed = (speed - maxAcceleration) > 0 ? maxAcceleration : 0;
-        // calculate next count limit for speed
-        nextCountLim = 2550/abs(nextSpeed);
-        enable = true;
-      } else if (false) {
-        // we can speed up
-      }
-    }
+  if (approachingLimits()) {
+    maxAccelerate(0);
+  } else if (opMode == 0) { // Speed control
+    speedControl();
+  } else if (opMode == 1) { // angle control
+    angleControlRel();
+  } else if (opMode == 2) {
+    angleControlAbs();
   }
 }
