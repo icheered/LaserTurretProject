@@ -77,7 +77,7 @@ bool approachingLimits() {
     return false;
   }
   // see if we need to stop / slow down
-  if ((abs(speed) / maxAcceleration) +1 >= stepsLeft) {
+  if ((abs(speed) / maxAcceleration) >= stepsLeft) { // apparently not +1???
     return true;
   } 
 }
@@ -164,6 +164,7 @@ ISR(TIMER2_COMPA_vect) {
     nextOutput = ((speed == nextSpeed) && (nextSpeed == 0)) ? 0 : 1;
     if (!((speed == nextSpeed) && (nextSpeed == 0))) {
       angle = (nextDir == 1) ? angle + 1 : angle - 1;
+      Serial.println(nextSpeed);
     }
     speed = nextSpeed;
     direction = nextDir;
