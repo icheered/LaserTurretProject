@@ -1,4 +1,5 @@
-"""codeauthor:: Brand Hauser"""
+"""codeauthor:: Brand Hauser
+Class for receiving messages from a microcontroller over serial port."""
 
 import serial
 
@@ -11,6 +12,9 @@ class Messenger:
         self.ser.baudrate = 19200
 
     def read(self):
+        """Open the serial port to read a message and then close the port.
+        :returns: the message read from the serial port"""
         self.ser.open()
-        self.ser.read()  # TODO decide length of message or change to readline and end message with \n
+        msg = self.ser.read()  # TODO decide length of message or change to readline and end message with \n
         self.ser.close()
+        return msg

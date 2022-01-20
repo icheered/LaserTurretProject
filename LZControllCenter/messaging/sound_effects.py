@@ -1,4 +1,5 @@
-"""codeauthor:: Brand Hauser"""
+"""codeauthor:: Brand Hauser
+Class for playing sound effects based on the current activity in the game."""
 
 import random
 
@@ -7,40 +8,49 @@ from pydub.playback import play
 import os
 
 
-class SoundEffects:
-
-    def __init__(self):
-        self.hit_sounds = build_hit_sound_list()
-        self.start_sounds = build_start_sound_list()
-
-    def play_hit_sound(self):
-        sound_clip = random.choice(self.hit_sounds)
-        play(sound_clip)
-
-    def play_start_sound(self):
-        sound_clip = random.choice(self.start_sounds)
-        play(sound_clip)
+def play_hit_sound():
+    """Randomly select and play a sound from the list generated for when the
+    turret is shot by a player."""
+    dir = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'Sounds', 'free', 'hit'))
+    sound_clip = AudioSegment.from_wav(dir + "/" + random.choice(os.listdir(dir)))
+    play(sound_clip)
 
 
-def build_hit_sound_list():
-    hit_list = []
-    no_no_aaaa = AudioSegment.from_wav(os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'Sounds', 'no,no,aaaa.wav')))
-    hit_list.append(no_no_aaaa)
-    return hit_list
+def play_start_sound():
+    """Randomly select and play a sound from the list generated for when the
+    turret starts."""
+    dir = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'Sounds', 'free', 'start'))
+    sound_clip = AudioSegment.from_wav(dir + "/" + random.choice(os.listdir(dir)))
+    play(sound_clip)
 
 
-def build_start_sound_list():
-    do_ya_punk = AudioSegment.from_wav(os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'Sounds', 'do-you-punk.wav')))
-    say_hello = AudioSegment.from_wav(os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'Sounds', 'Little Friend.wav')))
-    start_list = [do_ya_punk, say_hello]
-    return start_list
+def play_target_detected_sound():
+    """Randomly select and play a sound from the list generated for when
+    a target is spotted."""
+    dir = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'Sounds', 'free', 'target found'))
+    sound_clip = AudioSegment.from_wav(dir + "/" + random.choice(os.listdir(dir)))
+    play(sound_clip)
 
 
+def play_laser_fire_sound():
+    """Randomly select and play a sound from the list generated for when the
+    turret shoots at a player."""
+    dir = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'Sounds', 'free', 'fire'))
+    sound_clip = AudioSegment.from_wav(dir + "/" + random.choice(os.listdir(dir)))
+    play(sound_clip)
 
 
-
-
+def play_target_lost_sound():
+    """Randomly select and play a sound from the list generated for when the
+    turret loses sight of the target."""
+    dir = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'Sounds', 'free', 'target lost'))
+    sound_clip = AudioSegment.from_wav(dir + "/" + random.choice(os.listdir(dir)))
+    play(sound_clip)
 
 
 if __name__ == '__main__':
     play_hit_sound()
+    play_start_sound()
+    play_target_detected_sound()
+    play_laser_fire_sound()
+    play_target_lost_sound()

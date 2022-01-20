@@ -1,4 +1,6 @@
-"""codeauthor:: Brand Hauser"""
+"""codeauthor:: Brand Hauser
+Class for communicating from the control computer to the microcontroller on the turret.
+For passing instructions to the turret.  Uses a Messenger class for modular communication."""
 
 from ..data.values import Status, Direction
 
