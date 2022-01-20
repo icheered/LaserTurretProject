@@ -32,6 +32,6 @@ while 1:
 
     elif not buttonPin.value() and button:
         button = 0
-        print("Button went high" + str(i))
+        print("Button went high " + str(i))
         i += 1
         transmitter.transmit(1, i)
