@@ -6,6 +6,7 @@ from ir_rx.nec import NEC_8
 from ir_tx.nec import NEC
 
 
+# Function to be called when a message is received
 def callback(data, addr, ctrl):
     print("Callback is called")
     if data < 0:  # NEC protocol sends repeat codes.
@@ -14,10 +15,9 @@ def callback(data, addr, ctrl):
         print("Data {:02x} Addr {:04x}".format(data, addr))
 
 
+# Create receiver and transmitter
 receiver = NEC_8(machine.Pin(32, machine.Pin.IN), callback)
-
 transmitter = NEC(machine.Pin(12, machine.Pin.OUT))
-
 
 button = 0
 buttonPin = machine.Pin(26, machine.Pin.IN)
