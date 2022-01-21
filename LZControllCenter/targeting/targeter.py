@@ -112,6 +112,7 @@ class Targeter(multiprocessing.Process):
                     cv2.rectangle(frame, (closest_target[0], closest_target[1]),
                                   (closest_target[0] + closest_target[2], closest_target[1] + closest_target[3]),
                                   (0, 255, 0), 3)
+                    cv2.imshow("frame", frame)
                     x_error = calculate_x_error(closest_target[0])
                     y_error = calculate_y_error(closest_target[1])
                     if abs(x_error) < 10 and abs(y_error) < 10:
@@ -137,7 +138,6 @@ class Targeter(multiprocessing.Process):
     def determine_closest(self):
         """Determine which of the targets is closest based on their pixel area within
         the frame.
-        :param targets: dictionary of target values
         :returns: the int id of the closest target"""
         largest_area = 0
         largest_id = None
@@ -157,7 +157,7 @@ class Targeter(multiprocessing.Process):
         if len(self.detections) == 0:
             return
         boxes_ids = self.tracker.update(self.detections)  # track recurring targets by id
-        self.update_targets(boxes_ids, frame)
+        self.update_targets(boxes_ids)
         return frame
 
     def find_beacon(self, frame):
@@ -194,7 +194,7 @@ class Targeter(multiprocessing.Process):
         for (x, y, w, h) in faces:
             self.detections.append([x, y, w, h])
 
-    def update_targets(self, boxes_ids, frame):
+    def update_targets(self, boxes_ids):
         """Update target saved data by target id."""
         boxes = {}
         for box_id in boxes_ids:
