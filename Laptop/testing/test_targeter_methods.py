@@ -1,7 +1,7 @@
 import unittest
 from ..targeting.targeter import *
 from ..messaging.test_messenger import Messenger
-from ..data.values import Direction, MotionDirection
+from ..data.values import Direction
 from multiprocessing import Queue
 
 
@@ -41,11 +41,20 @@ class TestTargeter(unittest.TestCase):
         self.assertEqual(msg, correct)
 
     def test_read_motion_queue(self):
-        direction = MotionDirection.SOUTH
+        direction = Direction.SOUTH
         byte = direction.value.to_bytes(1, 'big')
         self.motion_queue.put(byte)
         time.sleep(1)
         self.targeter.read_motion_queue()
         msg = self.messenger.get_message()
         correct = int.to_bytes(4, 1, 'big') + int.to_bytes(100, 2, 'big')
+        self.assertEqual(correct, msg)
+        direction = Direction.NORTHWEST
+        byte = direction.value.to_bytes(1, 'big', signed=True)
+        self.motion_queue.put(byte)
+        time.sleep(1)
+        self.targeter.read_motion_queue()
+        msg = self.messenger.get_message()
+        num = -25
+        correct = int.to_bytes(4, 1, 'big') + num.to_bytes(2, 'big', signed=True)
         self.assertEqual(correct, msg)

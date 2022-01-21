@@ -10,17 +10,10 @@ class Status(enum.Enum):
 
 class Direction(enum.Enum):
     NORTH = 0
-    SOUTH = 100
+    NORTHEAST = 25
     EAST = 50
+    SOUTHEAST = 75
+    SOUTH = 100
+    SOUTHWEST = -75
     WEST = -50
-
-
-class MotionDirection(enum.Enum):
-    NORTH = 0
-    NORTHEAST = 1
-    EAST = 2
-    SOUTHEAST = 3
-    SOUTH = 4
-    SOUTHWEST = 5
-    WEST = 6
-    NORTHWEST = 7
+    NORTHWEST = -25

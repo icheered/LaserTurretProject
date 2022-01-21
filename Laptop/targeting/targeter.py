@@ -1,7 +1,7 @@
 """codeauthor:: Brand Hauser"""
 
 from ..messaging.output_to_turret import OutputToTurret
-from ..data.values import Status, Direction, MotionDirection
+from ..data.values import Status, Direction
 from .tracker import *
 import cv2
 import multiprocessing
@@ -9,7 +9,7 @@ import time
 from ..exceptions.InvalidDirectionException import InvalidDirectionException
 from ..messaging.sound_effects import *
 
-cascPath = os.path.realpath(os.path.join(os.path.dirname(__file__), '..'))
+cascPath = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'haarcascade_frontalface.xml'))
 faceCascade = cv2.CascadeClassifier(cascPath)
 
 
@@ -206,7 +206,7 @@ class Targeter(multiprocessing.Process):
         """Checks if there is a message from the IR sensors and then rotates to that direction"""
         if not self.motion_queue.empty():
             byte = self.motion_queue.get()
-            direction = MotionDirection(int.from_bytes(byte, 'big'))
+            direction = Direction(int.from_bytes(byte, 'big', signed=True))
             self.turn_to_new_target(direction)
         else:
             return
