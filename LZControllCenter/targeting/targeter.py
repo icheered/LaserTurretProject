@@ -109,7 +109,7 @@ class Targeter(multiprocessing.Process):
             if self.status == Status.READY:
                 frame = self.find_targets()
                 if len(self.targets) > 0:
-                    closest_target = self.determine_closest(self.targets)
+                    closest_target = self.determine_closest()
                     cv2.rectangle(frame, (closest_target[0], closest_target[1]),
                                   (closest_target[0] + closest_target[2], closest_target[1] + closest_target[3]),
                                   (0, 255, 0), 3)
