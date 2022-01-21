@@ -1,7 +1,7 @@
 """codeauthor:: Brand Hauser"""
 
 from ..messaging.output_to_turret import OutputToTurret
-from ..data.values import Status, Direction
+from ..data.values import Status, Direction, MotionDirection
 from .tracker import *
 import cv2
 import multiprocessing
@@ -61,20 +61,6 @@ def get_y_speed(y_error):
     elif 0 > speed_factor > -20:
         speed_factor = -20
     return speed_factor
-
-
-def convert_chars_to_direction(chars):
-    """Convert a byte representing a character into the corresponding enum direction."""
-    if chars == 'N':
-        return Direction.NORTH
-    elif chars == 'S':
-        return Direction.SOUTH
-    elif chars == 'E':
-        return Direction.EAST
-    elif chars == 'W':
-        return Direction.WEST
-    else:
-        raise InvalidDirectionException(chars)
 
 
 class Targeter(multiprocessing.Process):
@@ -220,13 +206,8 @@ class Targeter(multiprocessing.Process):
         """Checks if there is a message from the IR sensors and then rotates to that direction"""
         if not self.motion_queue.empty():
             byte = self.motion_queue.get()
-            msg = byte.decode('utf-8')
-            try:
-                direction = convert_chars_to_direction(msg)
-            except InvalidDirectionException as e:
-                print(e)
-            else:
-                self.turn_to_new_target(direction)
+            direction = MotionDirection(int.from_bytes(byte, 'big'))
+            self.turn_to_new_target(direction)
         else:
             return
 
