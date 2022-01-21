@@ -104,7 +104,6 @@ class Targeter(multiprocessing.Process):
         If not offline look for RGB beacon for targeting. If beacon_found then fire
         at the beacon.  If no beacons within view look for human.  If human_found
         follow that human.  Choose the closest target."""
-
         while True:
             if self.status == Status.READY:
                 frame = self.find_targets()
@@ -233,3 +232,6 @@ class Targeter(multiprocessing.Process):
 
     def set_status(self, status):
         self.status = status
+        self.turret.tilt_special(status)
+        if status == Status.READY:
+            play_start_sound()
