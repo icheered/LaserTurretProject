@@ -5,7 +5,8 @@ from .data.values import Status, Direction
 import time
 from multiprocessing import Queue
 from .data.team_color import *
-from .messaging.sound_effects import SoundEffects
+from .messaging.sound_effects import *
+from .messaging.test_messenger import Messenger
 
 
 status = Status.READY
@@ -25,13 +26,13 @@ def run():
 
 
 if __name__ == '__main__':
-    command_queue = Queue()
-    motion_queue = Queue()
+    command_queue = ()
+    motion_queue = Queue(1)
     colors = build_target_colors()
-    sound_fx = SoundEffects()
-    targeter = Targeter(command_queue, colors)
+    messenger = Messenger()
+    targeter = Targeter(command_queue, motion_queue, colors, messenger)
     targeter.daemon = True
     targeter.start()
-    sound_fx.play_start_sound()
+    play_start_sound()
     run()
 

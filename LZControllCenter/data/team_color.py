@@ -33,5 +33,4 @@ class TeamColor:
     def get_hsv_window(self):
         """Gets the hsv window values for the target.
         :returns: a list of the 6 values."""
-        return np.array([self.l_h, self.l_s, self.l_v,
-                         self.u_h, self.u_s, self.u_v])
+        return np.array([self.l_h, self.l_s, self.l_v]), np.array([self.u_h, self.u_s, self.u_v])

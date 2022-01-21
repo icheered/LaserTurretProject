@@ -11,6 +11,15 @@ class Messenger:
         self.ser.baudrate = 19200
 
     def send(self, msg):
+        """Open serial port to send a message and then close it."""
         self.ser.open()
         self.ser.write(msg)
         self.ser.close()
+
+    def get_message(self):
+        """Open the serial port to read a message and then close the port.
+        :returns: the message read from the serial port"""
+        self.ser.open()
+        msg = self.ser.read(1)
+        self.ser.close()
+        return msg

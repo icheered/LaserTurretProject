@@ -1,5 +1,8 @@
 """codeauthor:: Brand Hauser"""
 
+import logging
+
+
 class Messenger:
     def __init__(self):
         self.message_queue = []
@@ -8,4 +11,5 @@ class Messenger:
         self.message_queue.append(msg)
 
     def get_message(self):
-        return self.message_queue.pop()
+        msg = self.message_queue.pop()
+        return msg
