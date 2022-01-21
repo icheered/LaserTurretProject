@@ -78,6 +78,7 @@ class Targeter(multiprocessing.Process):
         self.y_speed = 0  # tracks tilt speed of last command sent to turret
         self.last_target_time = None
         self.last_move_time = None
+        self.last_sound_time = None
         self.status = Status.READY
         # Dict of target details.  Key = id#, value = tuple containing x and y
         # coordinates, width, height, area, and time first sighted
@@ -110,7 +111,8 @@ class Targeter(multiprocessing.Process):
     def fire(self):
         """Fire laser at target."""
         self.turret.fire()
-        play_laser_fire_sound()
+        play_laser_fire_sound(self.last_sound_time)
+        self.last_sound_time = time.time()
 
     def move_turret(self, x_error, y_error):
         """move the turret to the target.
@@ -215,4 +217,8 @@ class Targeter(multiprocessing.Process):
         self.status = status
         self.turret.tilt_special(status)
         if status == Status.READY:
-            play_start_sound()
+            play_start_sound(self.last_sound_time)
+            self.last_sound_time = time.time()
+
+    def get_last_sound_time(self):
+        return self.last_sound_time

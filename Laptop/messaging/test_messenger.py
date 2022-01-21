@@ -11,5 +11,5 @@ class Messenger:
         self.message_queue.append(msg)
 
     def get_message(self):
-        msg = self.message_queue.pop()
+        msg = self.message_queue.pop(0)
         return msg

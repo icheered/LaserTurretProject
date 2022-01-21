@@ -17,3 +17,11 @@ class Direction(enum.Enum):
     SOUTHWEST = -75
     WEST = -50
     NORTHWEST = -25
+
+
+class SoundFX(enum.Enum):
+    START = 0
+    HIT = 1
+    FIRE = 2
+    TFOUND = 3
+    TLOST = 4
