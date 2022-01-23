@@ -1,32 +1,27 @@
-import gc
-import time
-
-import machine
 import uasyncio as asyncio
 
 from gun import Gun
 from ir_com import Communicator
-from primitives.pushbutton import Pushbutton
-
-
-async def callback():
-    print("Callback called: ")
 
 
 async def main():
-    print("Started main function")
-    gun = Gun()
+    # Initialize gun and communicator
+    gun = Gun(triggerPin=26, reloadPin=27)
+    ir = Communicator(transmitPin=12, receivePin=14)
 
-    btnpin = machine.Pin(26, machine.Pin.IN, machine.Pin.PULL_UP)
-    btn = Pushbutton(btnpin)
+    # Inject callbacks
+    gun.setTransmitCallback(transmitCallback=ir.transmit)
+    ir.setMessagehandlerCallback(messageHandler=gun.handleMessage)
 
-    btn.press_func(callback)  # Callback expects tuple
-
+    # Forever block to keep async services running
     while True:
-        await asyncio.sleep(1)
+        await asyncio.sleep(60)
+        print("Heartbeat: Program is still running")
 
 
 print("Starting")
-asyncio.run(main())
-
-# buttonpin.irq(trigger=machine.Pin.IRQ_FALLING, handler=callback)
+try:
+    asyncio.run(main())
+except KeyboardInterrupt:
+    print("Got ctrl-c")
+    asyncio.new_event_loop()
