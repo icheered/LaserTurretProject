@@ -15,9 +15,10 @@ from primitives.pushbutton import Pushbutton
 class Gun:
     def __init__(
         self,
+        id: int,
         team: int = 1,
-        maxLives: int = 3,
-        maxAmmo: int = 10,
+        lives: int = 0,
+        maxAmmo: int = 0,
         triggerPin: int = 26,
         reloadPin: int = 27,
     ):
@@ -25,16 +26,15 @@ class Gun:
         Keep track of players state and handle game mechanics
 
         team:       Team to which the player belongs. 0=Turret, 1=Blue, 2=Red
-        maxLives:   Number of lives a player starts with
         maxAmmo:    Size of a full clip of ammo
         triggerPin: GPIO pin which is pulled LOW on fire
         reloadPin:  GPIO pin which is pulled LOW on reload
         """
+        self._id = id
         self._team = team
-        self._maxLives = maxLives
         self._maxAmmo = maxAmmo
 
-        self._lives = self._maxLives
+        self._lives = self.lives
         self._ammo = self._maxAmmo
 
         # Initiating async callbacks to handle button presses
@@ -56,9 +56,14 @@ class Gun:
     def setTransmitCallback(self, transmitCallback):
         self._transmitCallback = transmitCallback
 
-    def handleMessage(self, data, addr):
+    async def handleMessage(self, data: int, addr: int):
         print("Handling message")
-        print(message)
+        if addr < 100:
+            self._handleConfiguration(command=addr, value=data)
+        elif data != self._team:
+            await self._getHit(player=addr, team=data)
+        else:
+            print("Unexpected message. Addr: " + str(addr) + ", data: " + str(data))
 
     async def _shoot(self):
         print("Shooting")
@@ -70,17 +75,14 @@ class Gun:
 
         # TODO Turn on red laser and do buzz
         self._shooting = True
-        for i in range(5):
-            await self._transmitCallback(address=self._team, data=10)
-            await asyncio.sleep_ms(10)
-
+        for i in range(3):  # Transmission takes 67.5ms
+            await self._transmitCallback(address=self._id, data=self._team)
         self._ammo -= 1
 
         print("Done shooting. Ammo: " + str(self._ammo))
         self._shooting = False
 
     async def _reload(self):
-        # Handle reloading
         if self._reloading:
             return
 
@@ -92,27 +94,37 @@ class Gun:
         print("Done reloading. Ammo: " + str(self._ammo))
         self._reloading = False
 
-    async def _getHit(self):
+    async def _getHit(self, player: int, team: int):
         # Handle getting hit
         # TODO: Change LEDS status and play sound or buzz
-        print("Get hit")
+        print("Got hit by player " + str(player) + " from team " + str(team))
         if self._lives < 1:
             await self._handleDead()
             return
 
         self._lives -= 1
 
-    async def _handleConfiguration(self):
-        # Handle setting team
-        # Handle setting max ammo
-        # Handle setting max lives
-        # Handle resetting lives
+    async def _handleConfiguration(self, command: int, value: int):
+        # Todo Implement LED animatinos for each setting change
+        if command == 0:  # Handle setting team
+            self._team = value
+        elif command == 1:  # Handle setting max ammo
+            self._maxAmmo = value
+        elif command == 2:  # Handle (re)setting lives
+            self._lives = value
+        else:
+            print(
+                "Unexpected special command. Addr: "
+                + str(command)
+                + ", Data: "
+                + str(value)
+            )
         print("Handling configuration change")
 
     async def _handleOutOfAmmo(self):
-        # Play sound or blink LED or something
+        # Todo: Play sound or blink LED or something
         print("Out of ammo")
 
-    async def _handleDaed(self):
-        # Play sound or blink LED or something
+    async def _handleDead(self):
+        # Todo: Play sound or blink LED or something
         print("You're dead")

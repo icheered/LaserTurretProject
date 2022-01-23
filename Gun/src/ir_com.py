@@ -1,10 +1,12 @@
 import machine
+import uasyncio as asyncio
 
+# NEC_8 uses 8 bit address and data but sends logical inverses as extra reliability
+# NEC_16 uses 16 bit address (8 bit data) and does NOT have this address redundancy
+# from ir_rx.nec import NEC_8
 from ir_rx.nec import NEC_16
 from ir_rx.print_error import print_error
 from ir_tx.nec import NEC
-
-import uasyncio as asyncio
 
 
 class Communicator:
@@ -28,7 +30,7 @@ class Communicator:
             print("messagehandler callback wasn't initialized")
         else:
             print("Data {:02x} Addr {:04x}".format(data, addr))
-            self._messageCallback(data, addr)
+            asyncio.create_task(self._messageCallback(data=data, addr=addr))
 
     async def transmit(self, address, data):
         # print("Sending: " + str(data) + ", to: " + str(address))
