@@ -5,7 +5,8 @@
 # Author: Peter Hinch
 # Copyright Peter Hinch 2020 Released under the MIT license
 
-from utime import ticks_us, ticks_diff
+from utime import ticks_diff, ticks_us
+
 from ir_rx import IR_RX
 
 
@@ -18,6 +19,7 @@ class NEC_ABC(IR_RX):
 
     def decode(self, _):
         try:
+            print(self.edge)
             if self.edge > 68:
                 raise RuntimeError(self.OVERRUN)
             width = ticks_diff(self._times[1], self._times[0])

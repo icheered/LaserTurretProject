@@ -1,35 +1,32 @@
+import gc
 import time
 
 import machine
+import uasyncio as asyncio
 
-from ir_rx.nec import NEC_8
-from ir_tx.nec import NEC
-
-
-# Function to be called when a message is received
-def callback(data, addr, ctrl):
-    print("Callback is called")
-    if data < 0:  # NEC protocol sends repeat codes.
-        print("Repeat code.")
-    else:
-        print("Data {:02x} Addr {:04x}".format(data, addr))
+from gun import Gun
+from ir_com import Communicator
+from primitives.pushbutton import Pushbutton
 
 
-# Create receiver and transmitter
-receiver = NEC_8(machine.Pin(32, machine.Pin.IN), callback)
-transmitter = NEC(machine.Pin(12, machine.Pin.OUT))
+async def callback():
+    print("Callback called: ")
 
-button = 0
-buttonPin = machine.Pin(26, machine.Pin.IN)
 
-i = 0
-while 1:
-    if buttonPin.value() and not button:
-        button = 1
-        print("Button went low")
+async def main():
+    print("Started main function")
+    gun = Gun()
 
-    elif not buttonPin.value() and button:
-        button = 0
-        print("Button went high " + str(i))
-        i += 1
-        transmitter.transmit(1, i)
+    btnpin = machine.Pin(26, machine.Pin.IN, machine.Pin.PULL_UP)
+    btn = Pushbutton(btnpin)
+
+    btn.press_func(callback)  # Callback expects tuple
+
+    while True:
+        await asyncio.sleep(1)
+
+
+print("Starting")
+asyncio.run(main())
+
+# buttonpin.irq(trigger=machine.Pin.IRQ_FALLING, handler=callback)
