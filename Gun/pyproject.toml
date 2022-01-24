@@ -7,6 +7,7 @@ authors = ["ICheered <tjeerd992@gmail.com>"]
 [tool.poetry.dependencies]
 python = "^3.10"
 adafruit-ampy = "^1.1.0"
+esptool = "^3.2"
 
 [tool.poetry.dev-dependencies]
 black = {version = "^21.12b0", allow-prereleases = true}

@@ -34,7 +34,7 @@ class Gun:
         self._team = team
         self._maxAmmo = maxAmmo
 
-        self._lives = self.lives
+        self._lives = lives
         self._ammo = self._maxAmmo
 
         # Initiating async callbacks to handle button presses
@@ -59,7 +59,9 @@ class Gun:
     async def handleMessage(self, data: int, addr: int):
         print("Handling message")
         if addr < 100:
-            self._handleConfiguration(command=addr, value=data)
+            await self._handleConfiguration(command=addr, value=data)
+        elif data == self._team:
+            print("Got hit by team, friendly fire is turned off")
         elif data != self._team:
             await self._getHit(player=addr, team=data)
         else:
@@ -103,15 +105,20 @@ class Gun:
             return
 
         self._lives -= 1
+        print("Lives: " + str(self._lives))
 
     async def _handleConfiguration(self, command: int, value: int):
+        print("Handling configuration change")
         # Todo Implement LED animatinos for each setting change
         if command == 0:  # Handle setting team
             self._team = value
+            print("Team set to: " + str(self._team))
         elif command == 1:  # Handle setting max ammo
             self._maxAmmo = value
+            print("Max ammo set to: " + str(self._maxAmmo))
         elif command == 2:  # Handle (re)setting lives
             self._lives = value
+            print("Lives set to: " + str(self._lives))
         else:
             print(
                 "Unexpected special command. Addr: "
@@ -119,7 +126,7 @@ class Gun:
                 + ", Data: "
                 + str(value)
             )
-        print("Handling configuration change")
+        
 
     async def _handleOutOfAmmo(self):
         # Todo: Play sound or blink LED or something
