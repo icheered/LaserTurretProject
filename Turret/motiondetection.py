@@ -36,4 +36,5 @@ class MotionDetector:
             if self.motion:
                 frame = bytearray([6, self.interrupt_pin])
                 self.uart.write(frame)
+                print(frame)
                 self.motion = False

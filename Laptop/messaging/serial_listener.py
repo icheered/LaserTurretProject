@@ -6,7 +6,7 @@ import serial
 
 class Messenger:
     def __init__(self):
-        self.port = None  # Find correct port on computer and enter name
+        self.port = "COM9"  # Find correct port on computer and enter name
         self.ser = serial.Serial()
         self.ser.port = self.port
         self.ser.baudrate = 115200
@@ -15,6 +15,6 @@ class Messenger:
         """Open the serial port to read a message and then close the port.
         :returns: the message read from the serial port"""
         self.ser.open()
-        msg = self.ser.read(1)
+        msg = self.ser.read(2)
         self.ser.close()
         return msg
