@@ -1,7 +1,7 @@
 import unittest
 from ..targeting.targeter import *
 from ..messaging.test_messenger import Messenger
-from ..data.values import Direction
+from ..data.values import Direction, Status
 from multiprocessing import Queue
 
 
@@ -38,7 +38,7 @@ class TestTargeter(unittest.TestCase):
         self.messenger.clear_queue()
         y_error = 40
         speed = get_y_speed(y_error)
-        self.assertEqual(20, speed)
+        self.assertEqual(17, speed)
         y_error = 0
         speed = get_y_speed(y_error)
         self.assertEqual(0, speed)
@@ -91,7 +91,7 @@ class TestTargeter(unittest.TestCase):
         self.targeter.move_turret(x_error, y_error)
         num = -100
         correct_x = int.to_bytes(2, 1, 'big') + num.to_bytes(2, 'big', signed=True)
-        correct_y = int.to_bytes(0, 1, 'big') + int.to_bytes(20, 2, 'big')
+        correct_y = int.to_bytes(0, 1, 'big') + int.to_bytes(17, 2, 'big')
         msg1 = self.messenger.get_message()
         msg2 = self.messenger.get_message()
         self.assertEqual(correct_x, msg1)

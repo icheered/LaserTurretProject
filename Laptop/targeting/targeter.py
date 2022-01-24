@@ -1,13 +1,13 @@
 """codeauthor:: Brand Hauser"""
 
-from ..messaging.output_to_turret import OutputToTurret
-from ..data.values import Status, Direction
-from .tracker import *
+from messaging.output_to_turret import OutputToTurret
+from data.values import Status, Direction
+from tracker import *
 import cv2
 import multiprocessing
 import time
-from ..exceptions.InvalidDirectionException import InvalidDirectionException
-from ..messaging.sound_effects import *
+from exceptions.InvalidDirectionException import InvalidDirectionException
+from messaging.sound_effects import *
 
 cascPath = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'haarcascade_frontalface.xml'))
 faceCascade = cv2.CascadeClassifier(cascPath)

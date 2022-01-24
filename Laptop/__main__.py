@@ -1,12 +1,18 @@
 """codeauthor:: Brand Hauser"""
+import sys
+from pathlib import Path
 
-from .targeting.targeter import Targeter
-from .data.values import Status, Direction
+file = Path(__file__).resolve()
+package_root_directory = file.parents[1]
+sys.path.append(str(package_root_directory))
+
+from targeting.targeter import Targeter
+from data.values import Status, Direction
 import time
 from multiprocessing import Queue
-from .data.team_color import *
-from .messaging.sound_effects import *
-from .messaging.test_messenger import Messenger
+from data.team_color import *
+from messaging.sound_effects import *
+from messaging.test_messenger import Messenger
 
 status = Status.READY
 
@@ -32,5 +38,5 @@ if __name__ == '__main__':
     targeter = Targeter(command_queue, motion_queue, colors, messenger)
     targeter.daemon = True
     targeter.start()
-    play_start_sound()
+    play_start_sound(None)
     run()
