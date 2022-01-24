@@ -1,13 +1,13 @@
-from ir_com import Communicator
-
 import machine
+import uasyncio as asyncio
+
+from ir_com import Communicator
 from primitives.pushbutton import Pushbutton
 
-import uasyncio as asyncio
-    
 
-async def receiveMessage(address, command):
-    print("Received " + str(command) + " from " + str(address))
+async def receiveMessage(addr, data):
+    print("Received " + str(data) + " from " + str(addr))
+
 
 async def main():
     ir = Communicator(transmitPin=12, receivePin=14)
@@ -17,7 +17,7 @@ async def main():
     someAddress = 10
     someData = 0
 
-    async def sendMessage(): 
+    async def sendMessage():
         print("Sending")
         await ir.transmit(address=someAddress, data=someData)
 
@@ -29,9 +29,10 @@ async def main():
     while True:
         await asyncio.sleep(60)
         print("Still running...")
-    
-    
+
+
 import time
+
 time.sleep(3)
 print("Starting")
 
