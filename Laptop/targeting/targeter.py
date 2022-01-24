@@ -13,7 +13,6 @@ from Laptop.exceptions.InvalidDirectionException import InvalidDirectionExceptio
 cascPath = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'haarcascade_frontalface.xml'))
 faceCascade = cv2.CascadeClassifier(cascPath)
 
-
 minimum_speed = 10
 
 
@@ -74,13 +73,13 @@ class Targeter(multiprocessing.Process):
         self.tracker = EuclideanDistTracker()
         self.messenger = messenger
         self.turret = OutputToTurret(self.messenger)
-        self.cap = cv2.VideoCapture(0)
         self.command_queue = command_queue
         self.motion_queue = motion_queue
         self.colors = colors
         self.x_speed = 0  # tracks pan speed of last command sent to turret
         self.y_speed = 0  # tracks tilt speed of last command sent to turret
         self.last_target_time = None
+        self.last_target_count = 0
         self.last_move_time = None
         self.last_sound_time = None
         self.status = Status.READY
@@ -95,33 +94,63 @@ class Targeter(multiprocessing.Process):
         If not offline look for RGB beacon for targeting. If beacon_found then fire
         at the beacon.  If no beacons within view look for human.  If human_found
         follow that human.  Choose the closest target."""
+        cap = cv2.VideoCapture(4)
+        self.last_sound_time = time.time()
+        timestamp = time.time()
+        loopcount = 0
+        count = 0
         while True:
+            #print("loop")
+            loopcount += 1
+            self.targets.clear()
+            self.detections.clear()
             if self.status == Status.READY:
                 fired = False
-                frame = self.find_targets()
-                if len(self.targets) > 0:
-                    closest_target = self.determine_closest()
-                    cv2.rectangle(frame, (closest_target[0], closest_target[1]),
-                                  (closest_target[0] + closest_target[2], closest_target[1] + closest_target[3]),
-                                  (0, 255, 0), 3)
-                    cv2.imshow("frame", frame)
-                    x_error = calculate_x_error(closest_target[0])
-                    y_error = calculate_y_error(closest_target[1])
-                    if abs(x_error) < 10 and abs(y_error) < 10:
-                        self.fire()
-                        fired = True
+                _, frame = cap.read()
+                # self.find_beacon(frame)
+                if len(self.detections) == 0:
+                    self.find_human(frame)
+                if len(self.detections) != 0:
+                    count += 1
+                    boxes_ids = self.tracker.update(self.detections)  # track recurring targets by id
+                    self.update_targets(boxes_ids)
+                    if len(self.targets) > 0:
+                        if self.last_target_count == 0:
+                            self.last_sound_time = play_target_detected_sound(self.last_sound_time)
+                        self.last_target_count = len(self.targets)
+                        x, y, w, h, area, time_stamp = self.determine_closest()
+                        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 3)
+                        center_x = x + w//2
+                        center_y = y + h//2
+                        cv2.circle(frame, (center_x, center_y), 5, (0, 255, 0), -1)
+                        x_error = calculate_x_error(x)
+                        y_error = calculate_y_error(x)
+                        if abs(x_error) < 10 and abs(y_error) < 10:
+                            self.fire()
+                            fired = True
+                        else:
+                            self.move_turret(x_error, y_error)
                     else:
-                        self.move_turret(x_error, y_error)
+                        if self.last_target_count > 0:
+                            self.last_sound_time = play_target_lost_sound(self.last_sound_time)
+                        if fired is True or self.last_move_time is None or time.time() - self.last_move_time >= 2:
+                            self.read_motion_queue()
                 else:
-                    if fired == True  or self.last_move_time is None or time.time() - self.last_move_time >= 2:
-                        self.read_motion_queue()
-                # TODO check commands and motion queue
+                    self.last_target_count = 0
+                cv2.imshow("frame", frame)
+                key = cv2.waitKey(1)
+                if key == 27:
+                    break
+            if time.time() - timestamp >= 1:
+                timestamp = time.time()
+                print("loops: %2d, targets: %2d" % (loopcount, count))
+                count = 0
+                loopcount = 0
 
     def fire(self):
         """Fire laser at target."""
         self.turret.fire()
-        play_laser_fire_sound(self.last_sound_time)
-        self.last_sound_time = time.time()
+        self.last_sound_time = play_laser_fire_sound(self.last_sound_time)
 
     def move_turret(self, x_error, y_error):
         """move the turret to the target.
@@ -145,9 +174,10 @@ class Targeter(multiprocessing.Process):
         self.last_target_time = self.targets[largest_id][5]
         return self.targets[largest_id]
 
-    def find_targets(self):
+    def find_targets(self, cap):
         """Detect targets within frame and collect/update target data."""
-        _, frame = self.cap.read()
+        _, frame = cap.read()
+        cv2.imshow("frame", frame)
         self.find_beacon(frame)
         if len(self.detections) == 0:
             self.find_human(frame)
@@ -155,6 +185,7 @@ class Targeter(multiprocessing.Process):
             return
         boxes_ids = self.tracker.update(self.detections)  # track recurring targets by id
         self.update_targets(boxes_ids)
+
         return frame
 
     def find_beacon(self, frame):
@@ -198,9 +229,7 @@ class Targeter(multiprocessing.Process):
             x, y, w, h, object_id = box_id
             boxes[object_id] = x
             # change x and y from top left corner of box to center of target
-            x = x + (w//2)
-            y = y + (h//2)
-            if self.targets[object_id] is None:
+            if object_id not in self.targets:
                 self.targets[object_id] = [x, y, w, h, w * h, time.time()]
             else:
                 time_stamp = self.targets[object_id][5]
@@ -226,8 +255,7 @@ class Targeter(multiprocessing.Process):
         self.status = status
         self.turret.tilt_special(status)
         if status == Status.READY:
-            play_start_sound(self.last_sound_time)
-            self.last_sound_time = time.time()
+            self.last_sound_time = play_start_sound(self.last_sound_time)
 
     def get_last_sound_time(self):
         return self.last_sound_time

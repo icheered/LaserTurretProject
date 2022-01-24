@@ -53,7 +53,11 @@ class OutputToTurret:
         start angle. Start angle = North.  If start angle is 0 then 100 is South, -50 is
         West and 50 is East
         :param direction: enum value from data.values.py - Direction"""
-        self.send(int.to_bytes(4, 1, 'big') + direction.value.to_bytes(2, 'big', signed=True))
+        value = direction.value
+        print(value)
+        command = int.to_bytes(4, 1, 'big') + int(value).to_bytes(2, 'big', signed=True)
+        print(command)
+        self.send(command)
 
     def fire(self):
         """Turret control command to fire laser at current target.  Checks if turret is offline first."""

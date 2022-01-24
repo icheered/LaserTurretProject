@@ -27,7 +27,8 @@ def build_target_colors():
 def run():
     """Runs the algorithm of the overall control.  Listens for messages from
     IR sensors as well as hits and responds accordingly."""
-    pass
+    while True:
+        pass
 
 
 if __name__ == '__main__':

@@ -11,12 +11,13 @@ class TestTurret(unittest.TestCase):
     targeter = Targeter(None, motion_queue, None, messenger)
 
     def test_turret_rotate_from_motion(self):
-        dirs = [Direction.SOUTH, Direction.SOUTHEAST, Direction.EAST, Direction.NORTHEAST, Direction.NORTH,
-                Direction.NORTHWEST, Direction.WEST, Direction.SOUTHWEST, Direction.SOUTH]
+        dirs = [Direction.NORTH, Direction.SOUTH, Direction.SOUTHEAST, Direction.EAST, Direction.NORTHEAST,
+                Direction.NORTH, Direction.NORTHWEST, Direction.WEST, Direction.SOUTHWEST, Direction.SOUTH]
         for direction in dirs:
             byte = direction.value.to_bytes(1, 'big', signed=True)
             self.motion_queue.put(byte)
-            time.sleep(1)
+            time.sleep(2)
+            print(direction)
             self.targeter.read_motion_queue()
 
     def test_turret_rotate_by_speed(self):
