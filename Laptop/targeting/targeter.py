@@ -13,6 +13,9 @@ cascPath = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'haarc
 faceCascade = cv2.CascadeClassifier(cascPath)
 
 
+minimum_speed = 10
+
+
 def calculate_x_error(x):
     """Calculate the pixel distance between the center of the frame and the x
     coordinate of the target.
@@ -31,10 +34,10 @@ def get_x_speed(x_error):
     :returns: the speed at which the turret should pan.  Negative speed turns left.
     Positive speed turns right."""
     speed_factor = round(100 / 320 * x_error)
-    if 20 > speed_factor > 0:
-        speed_factor = 20
-    elif 0 > speed_factor > -20:
-        speed_factor = -20
+    if minimum_speed > speed_factor > 0:
+        speed_factor = minimum_speed
+    elif 0 > speed_factor > -minimum_speed:
+        speed_factor = -minimum_speed
     return speed_factor
 
 
@@ -56,10 +59,10 @@ def get_y_speed(y_error):
     :returns: the speed at which the turret should tilt.  Negative speed tilts down.
     Positive speed tilts up."""
     speed_factor = round(100 / 240 * y_error)
-    if 20 > speed_factor > 0:
-        speed_factor = 20
-    elif 0 > speed_factor > -20:
-        speed_factor = -20
+    if minimum_speed > speed_factor > 0:
+        speed_factor = minimum_speed
+    elif 0 > speed_factor > -minimum_speed:
+        speed_factor = -minimum_speed
     return speed_factor
 
 
@@ -93,6 +96,7 @@ class Targeter(multiprocessing.Process):
         follow that human.  Choose the closest target."""
         while True:
             if self.status == Status.READY:
+                fired = False
                 frame = self.find_targets()
                 if len(self.targets) > 0:
                     closest_target = self.determine_closest()
@@ -104,8 +108,12 @@ class Targeter(multiprocessing.Process):
                     y_error = calculate_y_error(closest_target[1])
                     if abs(x_error) < 10 and abs(y_error) < 10:
                         self.fire()
+                        fired = True
                     else:
                         self.move_turret(x_error, y_error)
+                else:
+                    if fired == True  or self.last_move_time is None or time.time() - self.last_move_time >= 2:
+                        self.read_motion_queue()
                 # TODO check commands and motion queue
 
     def fire(self):
