@@ -6,8 +6,12 @@ from primitives.pushbutton import Pushbutton
 import uasyncio as asyncio
     
 
+async def receiveMessage(address, command):
+    print("Received " + str(command) + " from " + str(address))
+
 async def main():
     ir = Communicator(transmitPin=12, receivePin=14)
+    ir.setMessagehandlerCallback(messageHandler=receiveMessage)
 
     # Random Values
     someAddress = 10
