@@ -9,7 +9,7 @@ class Messenger:
         self.port = None  # Find correct port on computer and enter name
         self.ser = serial.Serial()
         self.ser.port = self.port
-        self.ser.baudrate = 19200
+        self.ser.baudrate = 115200
 
     def read(self):
         """Open the serial port to read a message and then close the port.

@@ -5,10 +5,10 @@ import serial
 
 class Messenger:
     def __init__(self):
-        self.port = None  # Find correct port on computer and enter name
+        self.port = '/dev/ttyACM0'  # Find correct port on computer and enter name
         self.ser = serial.Serial()
         self.ser.port = self.port
-        self.ser.baudrate = 19200
+        self.ser.baudrate = 115200
 
     def send(self, msg):
         """Open serial port to send a message and then close it."""
