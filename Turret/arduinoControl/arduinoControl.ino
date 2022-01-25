@@ -6,7 +6,7 @@
 // speed settings
 #define COUNT_LIM_NUMERATOR 1000 // maxspeed * 5 for max ~180RPM
 #define ACCEL_CONSTANT 40
-#define MIN_SPEED 6
+#define MIN_SPEED 4
 
 
 // SETTINGS
