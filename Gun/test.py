@@ -1,16 +1,4 @@
-class t:
-    def __init__(self, id: int):
-        self.id = id
-    
-    def testfunc(self):
-        raise NotImplementedError
+inp = "12345678"
 
-class b(t):
-    def __init__(self, what):
-        print(f"What: {what}")
-
-
-
-id = 1
-initialized = b(what="test")
-initialized.testfunc()
+for i in range(7, -1, -1):
+    print(int(inp[i]))
