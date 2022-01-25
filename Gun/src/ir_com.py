@@ -16,6 +16,8 @@ class Communicator:
 
         self._transmitter = NEC(machine.Pin(transmitPin, machine.Pin.OUT))
 
+        transmitter = NEC(machine.Pin(12, machine.Pin.OUT))
+
         # Pre-define message callback function
         self._messageCallback = None
 
