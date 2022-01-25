@@ -1,5 +1,5 @@
 """codeauthor:: Brand Hauser"""
-
+from motion_sensing.ir_listener import IRListener
 from targeting.targeter import Targeter
 from data.values import Status, Direction
 import time
@@ -8,6 +8,7 @@ from data.team_color import *
 from messaging.sound_effects import *
 from messaging.test_messenger import Messenger
 from motion_sensing.motion_sensor import MotionSensor
+import _thread
 
 status = Status.READY
 
@@ -22,14 +23,8 @@ def build_target_colors():
 def run():
     """Runs the algorithm of the overall control.  Listens for messages from
     IR sensors as well as hits and responds accordingly."""
-    motionDetector = MotionSensor()
-    dir = Direction.NORTH
     while True:
-        motionDetector.detector()
-        newDir = motionDetector.latestDirection
-        if newDir != dir:
-            dir = newDir
-            print(newDir)
+        pass
 
 
 if __name__ == '__main__':
@@ -41,4 +36,13 @@ if __name__ == '__main__':
     # targeter.daemon = True
     # targeter.start()
     # play_start_sound()
+
+    # Create motion detector object
+    motion_detector = MotionSensor()
+
+    # Start listener
+    motionListener = IRListener(motion_detector)
+
+    motionListener.start()
+    motion_detector.start()
     run()
