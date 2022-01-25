@@ -1,4 +1,3 @@
-from messaging.serial_listener import Messenger
 from data.values import Direction
 import threading
 import time
@@ -7,10 +6,11 @@ TIME_FINE_GRAINED_DIR = 0.2
 
 
 class MotionSensor(threading.Thread):
-    def __init__(self):
+    def __init__(self, motion_queue):
         threading.Thread.__init__(self)
         self.directions = [0, 1, 2, 3]
         self.latestDirection = None
+        self.motion_queue = motion_queue
 
         self.received_bytes = None
         self.last_received_dir = None
@@ -55,3 +55,8 @@ class MotionSensor(threading.Thread):
                 self.latestDirection = updated_direction
                 self.received_bytes = None
                 print(self.latestDirection)
+
+                # Append to queue (possibly do nowait for faster performance)
+                if not self.motion_queue.empty():
+                    self.motion_queue.get()
+                self.motion_queue.put((self.latestDirection, time.time()))

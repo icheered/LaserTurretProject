@@ -3,7 +3,7 @@ from messaging.serial_listener import Messenger
 import threading
 
 
-class IRListener(threading.Thread):
+class InputListener(threading.Thread):
     def __init__(self, motion_sensor):
         threading.Thread.__init__(self)
         self.listener = Messenger()

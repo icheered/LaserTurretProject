@@ -1,14 +1,8 @@
 """codeauthor:: Brand Hauser"""
-from motion_sensing.ir_listener import IRListener
-from targeting.targeter import Targeter
-from data.values import Status, Direction
-import time
+from communication.input_listener import InputListener
+from data.values import Status
 from multiprocessing import Queue
-from data.team_color import *
-from messaging.sound_effects import *
-from messaging.test_messenger import Messenger
 from motion_sensing.motion_sensor import MotionSensor
-import _thread
 
 status = Status.READY
 
@@ -29,7 +23,7 @@ def run():
 
 if __name__ == '__main__':
     # command_queue = ()
-    # motion_queue = Queue(1)
+    motion_queue = Queue(1)
     # colors = build_target_colors()
     # messenger = Messenger()
     # targeter = Targeter(command_queue, motion_queue, colors, messenger)
@@ -38,11 +32,12 @@ if __name__ == '__main__':
     # play_start_sound()
 
     # Create motion detector object
-    motion_detector = MotionSensor()
+    motion_detector = MotionSensor(motion_queue)
 
-    # Start listener
-    motionListener = IRListener(motion_detector)
+    # Create IR listener
+    motionListener = InputListener(motion_detector)
 
+    # Start required threads
     motionListener.start()
     motion_detector.start()
     run()
