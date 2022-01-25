@@ -41,6 +41,8 @@ async def test(gun):
     await gun.handleMessage(addr=120, data=2)
     await asyncio.sleep(3)
 
+    await gun._handleSevenSegment()
+
     print("Testing done")
 
 async def main():
@@ -48,8 +50,9 @@ async def main():
     print("UserID: " + str(userID))
 
     # Initialize gun and communicator
-    gun = Gun(id=userID, triggerPin=26, reloadPin=27)
+    gun = Gun(id=userID, triggerPin=26, reloadPin=27, clockSSDPin=15, clearSSDPin=2, displayPin1=1, displayPin2=0, displayPin3=4, enableSSDPin=16)
     ir = Communicator(transmitPin=12, receivePin=14)
+
 
     # Inject callbacks
     gun.setTransmitCallback(transmitCallback=ir.transmit)
