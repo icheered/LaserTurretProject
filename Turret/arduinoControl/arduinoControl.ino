@@ -27,7 +27,7 @@ int nextOutput, nextDir, direction, nextSpeed;
 
 volatile short setValue, setAngle, angle;
 volatile byte opMode;
-volatile bool breaking;
+volatile bool braking;
 
 void setup() {
   // put your setup code here, to run once:
@@ -64,10 +64,10 @@ void loop() {
       Serial.println(setValue);
     } else if (opMode == PAN_ANGLE_ABS) {
       setAngle = (incomingByte[1]<<8) + (incomingByte[2]); 
-      breaking = false;
+      braking = false;
       Serial.println(setAngle);
     } else if (opMode == PAN_ANGLE_REL) {
-      breaking = false;
+      braking = false;
       setAngle = angle + (incomingByte[1]<<8) + (incomingByte[2]); 
       Serial.println(setAngle);
     }
@@ -188,13 +188,13 @@ void angleControlAbs() {
     nextCountLim = COUNT_LIM_NUMERATOR/MIN_SPEED;
   }
   else if (stepsNeededToStop + 1 >= abs(stepsLeft)) {
-    breaking = true;
+    braking = true;
     stopToZero();
   }
-  else if (stepsLeft > 1 && breaking == false) {
+  else if (stepsLeft > 1 && braking == false) {
     maxAccelerate(1);
   }
-  else if (stepsLeft < 1 && breaking == false) {
+  else if (stepsLeft < 1 && braking == false) {
     maxAccelerate(0);
   }
 
@@ -207,6 +207,7 @@ void angleControlAbs() {
 
 // 6.25Khz timer interrupt
 ISR(TIMER2_COMPA_vect) {
+  static bool dirChangeTimeout;
   noInterrupts();
   // increment iteration counter
   count++;
@@ -215,6 +216,7 @@ ISR(TIMER2_COMPA_vect) {
   digitalWrite(dirPin, nextDir);
   // reset counter if limit is achieved, and set next output to HIGH
   if (count >= countLim) {
+    dirChangeTimeout = false;
     //Serial.println(setValue);
     count = 0;
     countLim = nextCountLim;
@@ -225,7 +227,6 @@ ISR(TIMER2_COMPA_vect) {
       //Serial.println(nextSpeed);
     }
     speed = nextSpeed;
-    pulseTime = millis();
     direction = nextDir;
     //Serial.println(speed);
   } else {
@@ -241,6 +242,10 @@ ISR(TIMER2_COMPA_vect) {
     angleControlAbs();
   } else if (opMode == PAN_ANGLE_ABS) {    
     angleControlAbs();
+  }
+  if (nextDir != direction && dirChangeTimeout == false) {
+    count -= 1000;
+    dirChangeTimeout = true;
   }
   interrupts();
 }
