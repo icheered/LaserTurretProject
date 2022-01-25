@@ -25,3 +25,9 @@ class SoundFX(enum.Enum):
     FIRE = 2
     TFOUND = 3
     TLOST = 4
+
+
+class PanningOscillation(enum.Enum):
+    CENTER = 0
+    RIGHT = 1
+    LEFT = 2

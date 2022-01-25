@@ -1,7 +1,7 @@
 """codeauthor:: Brand Hauser"""
 
 from Laptop.messaging.output_to_turret import OutputToTurret
-from Laptop.data.values import Status, Direction
+from Laptop.data.values import Status, Direction, PanningOscillation
 
 from Laptop.messaging.sound_effects import *
 from tracker import *
@@ -58,11 +58,20 @@ def get_y_speed(y_error):
     target on the y plane
     :returns: the speed at which the turret should tilt.  Negative speed tilts down.
     Positive speed tilts up."""
-    speed_factor = round(100 / 240 * y_error)
-    if minimum_speed > speed_factor > 0:
-        speed_factor = minimum_speed
-    elif 0 > speed_factor > -minimum_speed:
-        speed_factor = -minimum_speed
+    negative = y_error < 0
+    y_error = abs(y_error)
+    if y_error < 49:
+        speed_factor = 0
+    elif y_error < 85:
+        speed_factor = 1
+    elif y_error < 117:
+        speed_factor = 2
+    elif y_error < 152:
+        speed_factor = 3
+    else:
+        speed_factor = 4
+    if negative:
+        speed_factor = - speed_factor
     return speed_factor
 
 
@@ -82,11 +91,16 @@ class Targeter(multiprocessing.Process):
         self.last_target_count = 0
         self.last_move_time = None
         self.last_sound_time = None
+        self.count_shot_since_motion_move = 0
+        self.shot_all = False
         self.status = Status.READY
         # Dict of target details.  Key = id#, value = tuple containing x and y
         # coordinates, width, height, area, and time first sighted
         self.targets = {}
         self.detections = []
+        self.pan_status = PanningOscillation.CENTER
+        self.pan_time_stamp = time.time()
+        self.px_to_degrees = 11.6
 
     def run(self):
         """Begin object detection while loop.  Within loop, if targets are detected
@@ -96,22 +110,18 @@ class Targeter(multiprocessing.Process):
         follow that human.  Choose the closest target."""
         cap = cv2.VideoCapture(4)
         self.last_sound_time = time.time()
-        timestamp = time.time()
-        loopcount = 0
-        count = 0
+        self.pan_time_stamp = time.time()
         while True:
             #print("loop")
-            loopcount += 1
             self.targets.clear()
             self.detections.clear()
             if self.status == Status.READY:
-                fired = False
                 _, frame = cap.read()
+                height, width, _ = frame.shape
                 # self.find_beacon(frame)
                 if len(self.detections) == 0:
                     self.find_human(frame)
                 if len(self.detections) != 0:
-                    count += 1
                     boxes_ids = self.tracker.update(self.detections)  # track recurring targets by id
                     self.update_targets(boxes_ids)
                     if len(self.targets) > 0:
@@ -127,25 +137,35 @@ class Targeter(multiprocessing.Process):
                         y_error = calculate_y_error(x)
                         if abs(x_error) < 10 and abs(y_error) < 10:
                             self.fire()
-                            fired = True
+                            self.count_shot_since_motion_move += 1
+                            if self.count_shot_since_motion_move == len(self.targets):
+                                self.shot_all = True
                         else:
                             self.move_turret(x_error, y_error)
                     else:
                         if self.last_target_count > 0:
                             self.last_sound_time = play_target_lost_sound(self.last_sound_time)
-                        if fired is True or self.last_move_time is None or time.time() - self.last_move_time >= 2:
+                        if self.shot_all is True or self.last_move_time is None or \
+                                time.time() - self.last_move_time >= 2:
                             self.read_motion_queue()
                 else:
                     self.last_target_count = 0
+                    self.oscillate()
                 cv2.imshow("frame", frame)
                 key = cv2.waitKey(1)
                 if key == 27:
                     break
-            if time.time() - timestamp >= 1:
-                timestamp = time.time()
-                print("loops: %2d, targets: %2d" % (loopcount, count))
-                count = 0
-                loopcount = 0
+
+    def oscillate(self):
+        if self.pan_status == PanningOscillation.CENTER and time.time() - self.pan_time_stamp > 1:
+            self.turret.pan_relative_angle(10)
+            self.pan_time_stamp = time.time()
+        elif self.pan_status == PanningOscillation.RIGHT and time.time() - self.pan_time_stamp > 1:
+            self.turret.pan_relative_angle(-20)
+            self.pan_time_stamp = time.time()
+        elif self.pan_status == PanningOscillation.LEFT and time.time() - self.pan_time_stamp > 1:
+            self.turret.pan_relative_angle(20)
+            self.pan_time_stamp = time.time()
 
     def fire(self):
         """Fire laser at target."""
@@ -156,10 +176,10 @@ class Targeter(multiprocessing.Process):
         """move the turret to the target.
         :param x_error: the difference between the target x coordinate and the center of the frame.
         :param y_error: the difference between the target y coordinate and the center of the frame."""
-        pan_speed = get_x_speed(x_error)
-        tilt_speed = get_y_speed(y_error)
-        self.turret.pan_at_speed(pan_speed)
-        self.turret.tilt_at_speed(tilt_speed)
+        x_angle = x_error / self.px_to_degrees
+        y_speed = get_y_speed(y_error)
+        self.turret.pan_relative_angle(x_angle)
+        self.turret.tilt_at_speed(y_speed)
 
     def determine_closest(self):
         """Determine which of the targets is closest based on their pixel area within
@@ -241,13 +261,19 @@ class Targeter(multiprocessing.Process):
         :param direction: enum value from data.values.py - Direction"""
         self.last_move_time = time.time()
         self.turret.pan_absolute_angle(direction)
+        self.pan_time_stamp = time.time()
+        self.pan_status = PanningOscillation.CENTER
 
     def read_motion_queue(self):
         """Checks if there is a message from the IR sensors and then rotates to that direction"""
         if not self.motion_queue.empty():
-            byte = self.motion_queue.get()
-            direction = Direction(int.from_bytes(byte, 'big', signed=True))
+            direction, timestamp = self.motion_queue.get()
+            if time.time() - timestamp > 5:
+                return
             self.turn_to_new_target(direction)
+            self.shot_all = False
+            self.count_shot_since_motion_move = 0
+            self.last_move_time = time.time()
         else:
             return
 
@@ -256,6 +282,9 @@ class Targeter(multiprocessing.Process):
         self.turret.tilt_special(status)
         if status == Status.READY:
             self.last_sound_time = play_start_sound(self.last_sound_time)
+        elif status == Status.OFFLINE:
+            time.sleep(5)
+            self.turret.tilt_special(Status.READY)
 
     def get_last_sound_time(self):
         return self.last_sound_time
