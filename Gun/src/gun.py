@@ -80,6 +80,7 @@ class HandGun(_Gun):
         self._reloadBtn.press_func(self._reload)
 
         self._reloading = False
+        # Todo: Async updating of 7 segment displays
 
     async def _doVibration(self, duration):
         self._vibratorPin.value(1)
