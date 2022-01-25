@@ -15,6 +15,7 @@ async def main():
 
     # If pin 23 is LOW then this is a turret
     turretPin = machine.Pin(23, machine.Pin.IN, machine.Pin.PULL_UP)
+    print(turretPin.value())
     gun = None
     if turretPin.value():
         print("Creating handgun")
@@ -22,7 +23,7 @@ async def main():
         gun = HandGun(id=userID, triggerPin=26, reloadPin=27, lives=3, maxAmmo=10)
     else:
         print("Creating turret")
-        gun = Turret(id=userID, motionPins=[1, 2, 3, 4], pwmTiltPin=25)  # TODO fix these pins
+        gun = Turret(id=userID, motionPins=[15, 2, 0, 4], pwmTiltPin=25)  # TODO fix these pins
     
     print("Creating IR communicator")
     ir = Communicator(transmitPin=12, receivePin=14)

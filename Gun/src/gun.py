@@ -147,7 +147,6 @@ class HandGun(_Gun):
 class Turret(_Gun):
     def __init__(self, id: int, motionPins: list, pwmTiltPin:int, team: int = 0):
         super().__init__(id=id, team=team)
-
         # Instantiate peripherals
         self._motionDetector = MotionDetector(motionDetectorPins=motionPins)
         self._serialCom = SerialCommunicator()

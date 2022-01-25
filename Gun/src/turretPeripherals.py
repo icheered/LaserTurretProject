@@ -21,6 +21,7 @@ class SerialCommunicator:
 
     def send(self, opcode, data):
         frame = bytearray([opcode, data])
+        print("Writing to serial: " + str(frame))
         sys.stdout.write(frame)
 
     async def doReceive(self):
@@ -69,14 +70,13 @@ class MotionDetector:
         self.pirPins = [pir0, pir1, pir2, pir3]
 
         self.interrupt_pin = -1
-        self.pirPins = []
         self.motion = False
 
         self.MOTION_DETECTOR_OPCODE = 6
 
         self._sendSerial = None
 
-    def setSendSerialCallback(callback):
+    def setSendSerialCallback(self, callback):
         self._sendSerial = callback     
 
     def handle_interrupt_pir(self, pin):
