@@ -20,10 +20,13 @@ class MotionSensor(threading.Thread):
 
     def run(self) -> None:
         while True:
-            if self.received_bytes is not None and (self.received_bytes[1] != self.last_received_dir
-                                                    or self.last_received_dir is None):
-
+            if self.received_bytes is not None:
                 direction = self.received_bytes[1]
+            else:
+                direction = None
+            if direction is not None and (direction != self.last_received_dir
+                                          or self.last_received_dir is None):
+
                 if direction == 0:
                     updated_direction = Direction.NORTH
                 elif direction == 1:
@@ -50,4 +53,5 @@ class MotionSensor(threading.Thread):
                             updated_direction = Direction.NORTHWEST
 
                 self.latestDirection = updated_direction
+                self.received_bytes = None
                 print(self.latestDirection)
