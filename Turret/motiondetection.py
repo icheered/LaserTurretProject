@@ -1,14 +1,14 @@
 from machine import UART
 from machine import Pin
+import select
+import sys
+
+MOTION_DETECTOR_OPCODE = 6
 
 
 class MotionDetector:
 
     def __init__(self):
-        # UART
-        self.uart = UART(1, 9600)
-        self.uart.init(9600, bits=8, parity=None, stop=1)
-
         # Motion detection
         self.interrupt_pin = -1
         self.pirPins = []
@@ -18,7 +18,7 @@ class MotionDetector:
     def init_motion_detection(self):
         # First four pins next to ground on ESP8266
         pir0 = Pin(2, Pin.IN)
-        pir1 = Pin(0, Pin.IN)
+        pir1 = Pin(15, Pin.IN)
         pir2 = Pin(4, Pin.IN)
         pir3 = Pin(5, Pin.IN)
         pir0.irq(trigger=Pin.IRQ_RISING, handler=self.handle_interrupt_pir)
@@ -34,7 +34,6 @@ class MotionDetector:
     async def detection(self):
         while True:
             if self.motion:
-                frame = bytearray([6, self.interrupt_pin])
-                self.uart.write(frame)
-                print(frame)
+                frame = bytearray([MOTION_DETECTOR_OPCODE, self.interrupt_pin])
+                sys.stdout.write(frame)
                 self.motion = False
