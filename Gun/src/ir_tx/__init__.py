@@ -100,16 +100,3 @@ class IR:
         self.verbose and print('add', t)
         # .carrier unaffected
         self._arr[self.aptr - 1] += t
-
-
-# Given an iterable (e.g. list or tuple) of times, emit it as an IR stream.
-class Player(IR):
-
-    def __init__(self, pin, freq=38000, verbose=False):  # NEC specifies 38KHz
-        super().__init__(pin, freq, 68, 33, verbose)  # Measured duty ratio 33%
-
-    def play(self, lst):
-        for x, t in enumerate(lst):
-            self._arr[x] = t
-        self.aptr = x + 1
-        self.trigger()

@@ -5,6 +5,8 @@ import uasyncio as asyncio
 from gun import HandGun, Turret
 from ir_com import Communicator
 
+from turretPeripherals import SerialCommunicator
+
 async def main():
     userID = random.randint(100, 65535)
     print("UserID: " + str(userID))
@@ -15,17 +17,24 @@ async def main():
     turretPin = machine.Pin(23, machine.Pin.IN, machine.Pin.PULL_UP)
     gun = None
     if turretPin.value():
-        gun = HandGun(id=userID, triggerPin=26, reloadPin=27)
+        print("Creating handgun")
+        #gun = HandGun(id=userID, triggerPin=26, reloadPin=27)
+        gun = HandGun(id=userID, triggerPin=26, reloadPin=27, lives=3, maxAmmo=10)
     else:
-        gun = Turret(id=id, motionPins=[1, 2, 3, 4])  # TODO fix these pins
+        print("Creating turret")
+        gun = Turret(id=userID, motionPins=[1, 2, 3, 4], pwmTiltPin=25)  # TODO fix these pins
     
-    
-
+    print("Creating IR communicator")
     ir = Communicator(transmitPin=12, receivePin=14)
 
     # Inject callbacks
+    print("Injecting callbacks")
     gun.setTransmitCallback(transmitCallback=ir.transmit)
-    ir.setMessagehandlerCallback(messageHandler=gun.handleMessage)
+    ir.setMessagehandlerCallback(messageHandler=gun._handleMessage)
+
+    print("Starting gun")
+    # Start the gun
+    gun.start()
 
 
     # Forever block to keep async services running
@@ -36,7 +45,7 @@ async def main():
 
 import time
 
-time.sleep(3)
+time.sleep(1.5)
 print("Starting")
 try:
     asyncio.run(main())
