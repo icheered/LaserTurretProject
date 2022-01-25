@@ -28,7 +28,7 @@ class _Gun:
         if addr < 100:
             await self._handleConfiguration(command=addr, value=data)
         else:
-            await self._getHit(player=addr, team=data)
+            await self._getShot(player=addr, team=data)
     
     async def _shoot(self):
         raise NotImplementedError
@@ -73,8 +73,11 @@ class HandGun(_Gun):
         if self._ammo < 1:
             await self._handleOutOfAmmo()
             return
+        if self._lives < 1:
+            await self._handleDead()
+            return
 
-        # TODO Turn on red laser and do buzz
+        # TODO: Turn on red laser and do buzz
         self._shooting = True
         for i in range(3):  # Transmission takes 67.5ms
             await self._transmitCallback(address=self._id, data=self._team)
