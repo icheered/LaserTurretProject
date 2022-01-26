@@ -1,7 +1,7 @@
 """
 Gun object that holds the user's state (lives, ammo, team)
 """
-
+import time
 import machine
 import neopixel
 import uasyncio as asyncio
@@ -66,10 +66,10 @@ class HandGun(_Gun):
         self._lives = lives
         self._ammo = self._maxAmmo
 
-        self._displayCLKPin = machine.Pin(displayClockPin, machine.Pin.OUT)
-        self._d1dataPin = machine.Pin(d1data, machine.Pin.OUT)
-        self._d2dataPin = machine.Pin(d2data, machine.Pin.OUT)
-        self._d3dataPin = machine.Pin(d3data, machine.Pin.OUT)
+        # self._displayCLKPin = machine.Pin(displayClockPin, machine.Pin.OUT)
+        # self._d1dataPin = machine.Pin(d1data, machine.Pin.OUT)
+        # self._d2dataPin = machine.Pin(d2data, machine.Pin.OUT)
+        # self._d3dataPin = machine.Pin(d3data, machine.Pin.OUT)
         self._laserPin = machine.Pin(laserPin, machine.Pin.OUT)
         self._vibratorPin = machine.Pin(vibratorPin, machine.Pin.OUT)
 
@@ -83,6 +83,8 @@ class HandGun(_Gun):
 
         self.neoPixel = neopixel.NeoPixel(machine.Pin(rgbledPin), 8)
 
+        self._updateTeamColor()
+
         self._reloading = False
         self._updateDisplays()
 
@@ -93,7 +95,7 @@ class HandGun(_Gun):
 
     def _updateTeamColor(self):
         if self._team == 0:
-            self._set_led(255, 255, 255) # White
+            self._set_led(100, 100, 100) # White
         elif self._team == 1:
             self._set_led(255, 0, 0) # Red
         elif self._team == 2:
@@ -104,7 +106,7 @@ class HandGun(_Gun):
             print("Team color is not defined")
 
     def _set_led(self, r, g, b):
-        self.neoPixel[0] = (r, g, b)
+        self.neoPixel.fill((r, g, b))
         self.neoPixel.write()
 
     async def _doVibration(self, duration):
@@ -225,7 +227,8 @@ class Turret(_Gun):
         print("Opcode: " + str(opcode) + ", Message: " + str(message))
         if opcode[0] == 0:  # Tilt_WPM_Opcode
             tiltSpeed = unpack(">h", message)
-            self._tiltMotor.setTilt(int(tiltSpeed[0] / 4))
+            speed_dict = {-5: -43, -4: -32, -2: -24, -1: -16, 0: 0, 1: 12, 2: 18, 4: 24, 5: 36}
+            self._tiltMotor.setTilt(int(speed_dict.get(tiltSpeed[0])/4))
         if opcode[0] == 5:  # SHOOT
             await self._shoot()
 
