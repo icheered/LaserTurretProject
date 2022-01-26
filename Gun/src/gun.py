@@ -82,8 +82,6 @@ class HandGun(_Gun):
         self._reloadBtn.press_func(self._reload)
 
         self.neoPixel = neopixel.NeoPixel(machine.Pin(rgbledPin), 8)
-        # Set RGB led to red
-        self._set_led(255, 0, 0)
 
         self._reloading = False
         self._updateDisplays()
@@ -94,7 +92,16 @@ class HandGun(_Gun):
         pass
 
     def _updateTeamColor(self):
-        pass
+        if self._team == 0:
+            self._set_led(255, 255, 255) # White
+        elif self._team == 1:
+            self._set_led(255, 0, 0) # Red
+        elif self._team == 2:
+            self._set_led(0, 0, 255) # Blue
+        elif self._team == 3:
+            self._set_led(0, 255, 0) # Blue
+        else:
+            print("Team color is not defined")
 
     def _set_led(self, r, g, b):
         self.neoPixel[0] = (r, g, b)
