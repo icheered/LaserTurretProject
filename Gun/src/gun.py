@@ -80,7 +80,15 @@ class HandGun(_Gun):
         self._reloadBtn.press_func(self._reload)
 
         self._reloading = False
-        # Todo: Async updating of 7 segment displays
+        self._updateDisplays()
+
+    def _updateDisplays(self):
+        # Update the 2 ammo displays
+        # Update the life display
+        pass
+
+    def _updateTeamColor(self):
+        pass
 
     async def _doVibration(self, duration):
         self._vibratorPin.value(1)
@@ -108,6 +116,7 @@ class HandGun(_Gun):
         for i in range(3):  # Transmission takes 67.5ms
             await self._transmitCallback(address=self._id, data=self._team)
         self._ammo -= 1
+        self._updateDisplays()
         print("Done shooting. Ammo: " + str(self._ammo))
         self._shooting = False
 
@@ -126,6 +135,7 @@ class HandGun(_Gun):
             await asyncio.sleep_ms(100)
 
         self._ammo = self._maxAmmo
+        self._updateDisplays()
         print("Done reloading. Ammo: " + str(self._ammo))
         self._reloading = False
 
@@ -141,6 +151,7 @@ class HandGun(_Gun):
             return
 
         self._lives -= 1
+        self._updateDisplays()
         await self._doVibration(2)
         print("Lives: " + str(self._lives))
 
@@ -149,12 +160,14 @@ class HandGun(_Gun):
         if command == 0:  # Handle setting team
             self._team = value
             print("Team set to: " + str(self._team))
+            self._updateTeamColor()
         elif command == 1:  # Handle setting max ammo
             self._maxAmmo = value
             print("Max ammo set to: " + str(self._maxAmmo))
         elif command == 2:  # Handle (re)setting lives
             self._lives = value
             print("Lives set to: " + str(self._lives))
+            self._updateDisplays()
         else:
             print(
                 "Unexpected special command. Addr: "
