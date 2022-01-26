@@ -38,10 +38,10 @@ class TestTargeter(unittest.TestCase):
         self.messenger.clear_queue()
         y_error = 40
         speed = get_y_speed(y_error)
-        self.assertEqual(17, speed)
-        y_error = 0
-        speed = get_y_speed(y_error)
         self.assertEqual(0, speed)
+        y_error = 125
+        speed = get_y_speed(y_error)
+        self.assertEqual(3, speed)
 
     def test_turn_to_new_target(self):
         self.messenger.clear_queue()
@@ -54,22 +54,25 @@ class TestTargeter(unittest.TestCase):
     def test_read_motion_queue(self):
         self.messenger.clear_queue()
         direction = Direction.SOUTH
-        byte = direction.value.to_bytes(1, 'big')
-        self.motion_queue.put(byte)
+        self.motion_queue.put((direction, time.time()))
         time.sleep(1)
         self.targeter.read_motion_queue()
         msg = self.messenger.get_message()
         correct = int.to_bytes(4, 1, 'big') + int.to_bytes(100, 2, 'big')
         self.assertEqual(correct, msg)
         direction = Direction.NORTHWEST
-        byte = direction.value.to_bytes(1, 'big', signed=True)
-        self.motion_queue.put(byte)
+        self.motion_queue.put((direction, time.time()))
         time.sleep(1)
         self.targeter.read_motion_queue()
         msg = self.messenger.get_message()
         num = -25
         correct = int.to_bytes(4, 1, 'big') + num.to_bytes(2, 'big', signed=True)
         self.assertEqual(correct, msg)
+        self.motion_queue.put((direction, time.time()))
+        time.sleep(6)
+        self.targeter.read_motion_queue()
+        time.sleep(1)
+        self.assertTrue(self.messenger.is_empty())
 
     def test_fire(self):
         self.messenger.clear_queue()
@@ -89,9 +92,9 @@ class TestTargeter(unittest.TestCase):
         x_error = -320
         y_error = 40
         self.targeter.move_turret(x_error, y_error)
-        num = -100
-        correct_x = int.to_bytes(2, 1, 'big') + num.to_bytes(2, 'big', signed=True)
-        correct_y = int.to_bytes(0, 1, 'big') + int.to_bytes(17, 2, 'big')
+        num = int(-28//1.8)
+        correct_x = int.to_bytes(3, 1, 'big') + num.to_bytes(2, 'big', signed=True)
+        correct_y = int.to_bytes(0, 1, 'big') + int.to_bytes(0, 2, 'big')
         msg1 = self.messenger.get_message()
         msg2 = self.messenger.get_message()
         self.assertEqual(correct_x, msg1)

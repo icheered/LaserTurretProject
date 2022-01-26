@@ -13,7 +13,7 @@ def nothing(x):
     pass
 
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(4)
 # Trackbar window for dialing in color detection
 cv2.namedWindow("Trackbars")
 
