@@ -14,9 +14,9 @@ class Direction(enum.Enum):
     EAST = 50
     SOUTHEAST = 75
     SOUTH = 100
-    SOUTHWEST = -75
-    WEST = -50
-    NORTHWEST = -25
+    SOUTHWEST = 125
+    WEST = 150
+    NORTHWEST = 175
 
 
 class SoundFX(enum.Enum):

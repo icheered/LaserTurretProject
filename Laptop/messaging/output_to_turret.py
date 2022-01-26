@@ -53,17 +53,17 @@ class OutputToTurret:
         angle = int(angle // 1.8)
         self.pan_send(int.to_bytes(3, 1, 'big') + angle.to_bytes(2, 'big', signed=True))
 
-    def pan_absolute_angle(self, direction):
-        """Turret control command to rotate to the specified angle relative to the preset
-        start angle. Start angle = North.  If start angle is 0 then 100 is South, -50 is
-        West and 50 is East
+    def motion_detect_send_direction(self, direction):
+        """Turret control command to send the direction at which motion was detected by the motion
+        sensors. The turret will move left or right based on this.
         :param direction: enum value from data.values.py - Direction"""
         value = direction.value
         print(value)
-        command = int.to_bytes(4, 1, 'big') + int(value).to_bytes(2, 'big', signed=True)
+        command = int.to_bytes(7, 1, 'big') + int(value).to_bytes(2, 'big', signed=True)
         print(command)
         self.pan_send(command)
 
     def fire(self):
         """Turret control command to fire laser at current target.  Checks if turret is offline first."""
         self.tilt_send(int.to_bytes(5, 1, 'big') + int.to_bytes(0, 2, 'big'))
+

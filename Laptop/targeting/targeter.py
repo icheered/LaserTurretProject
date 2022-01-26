@@ -106,6 +106,7 @@ class Targeter(multiprocessing.Process):
         self.pan_status = PanningOscillation.CENTER
         self.pan_time_stamp = time.time()
         self.px_to_degrees = 15.1
+        self.motionFlag = False
 
     def run(self):
         """Begin object detection while loop.  Within loop, if targets are detected
@@ -129,6 +130,7 @@ class Targeter(multiprocessing.Process):
                 else:
                     beacon_found = True
                 if len(self.detections) > 0:
+                    self.motionFlag = False
                     self.last_target_time = time.time()
                     """boxes_ids = self.tracker.update(self.detections)  # track recurring targets by id
                     self.update_targets(boxes_ids)
@@ -166,7 +168,8 @@ class Targeter(multiprocessing.Process):
                 else:
                     #self.turret.tilt_at_speed(0)
                     #if self.last_target_time is not None and time.time() - self.last_target_time > 2:
-                    self.move_turret(0, 0)
+                    if not self.motionFlag:
+                        self.move_turret(0, 0)
                     if self.last_move_time is None or time.time() - self.last_move_time >= 2:
                         if self.read_motion_queue():
                             continue
@@ -284,11 +287,10 @@ class Targeter(multiprocessing.Process):
                 self.targets[object_id] = [x, y, w, h, w * h, time_stamp]
 
     def turn_to_new_target(self, direction):
-        """Used to turn to an absolute angle based on IR sensor messaging if not currently
-        tracking a target.
+        """Used to turn to a certain direction based on where motion has been detected
         :param direction: enum value from data.values.py - Direction"""
         self.last_move_time = time.time()
-        self.turret.pan_absolute_angle(direction)
+        self.turret.motion_detect_send_direction(direction)
         self.pan_time_stamp = time.time()
         self.pan_status = PanningOscillation.CENTER
 
@@ -298,6 +300,7 @@ class Targeter(multiprocessing.Process):
             direction, timestamp = self.motion_queue.get()
             if time.time() - timestamp > 5:
                 return False
+            self.motionFlag = True
             self.turn_to_new_target(direction)
             self.shot_all = False
             self.count_shot_since_motion_move = 0
