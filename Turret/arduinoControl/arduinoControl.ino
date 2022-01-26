@@ -215,7 +215,10 @@ ISR(TIMER2_COMPA_vect) {
   digitalWrite(pulsePin, nextOutput);
   digitalWrite(dirPin, nextDir);
   // reset counter if limit is achieved, and set next output to HIGH
-  if (count >= countLim) {
+  if (nextOutput == 1 && count <=4) {
+    nextOutput = 1;
+  }
+  else if (count >= countLim) {
     dirChangeTimeout = false;
     //Serial.println(setValue);
     count = 0;
