@@ -77,10 +77,15 @@ void loop() {
         if (angle < 0) {
             transformedAngle = 148 - angle
         }
+
+        if (transformedAngle > 200) {
+            transformedAngle = transformedAngle - 200
+        }
+
         short difference = transformedAngle - receivedAngle
         // Turn left
-        if ((difference > 0 && ((transformedAngle - receivedAngle) < 148))
-            || (difference < 0 && (abs(transformedAngle - receivedAngle) > 148)) ) {
+        if ((difference > 0 && ((transformedAngle - receivedAngle) < 100))
+            || (difference < 0 && (abs(transformedAngle - receivedAngle) > 100)) ) {
             setValue = -10;
         } else {
             // Turn right
