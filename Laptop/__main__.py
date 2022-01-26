@@ -24,7 +24,11 @@ def build_target_colors():
     green = TeamColor("green")
     green.set_lower_hsv([44,88,128])
     green.set_upper_hsv([71, 201, 255])
-    colors_list.append(green)
+    #colors_list.append(green)
+    yellow = TeamColor("yellow")
+    yellow.set_lower_hsv([8, 107, 106])
+    yellow.set_upper_hsv([311, 230, 255])
+    colors_list.append(yellow)
     return colors_list
 
 

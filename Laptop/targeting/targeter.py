@@ -71,9 +71,9 @@ def get_y_speed(y_error):
     elif y_error < 117:
         speed_factor = 2
     elif y_error < 152:
-        speed_factor = 2
+        speed_factor = 4
     else:
-        speed_factor = 2
+        speed_factor = 4
     if not negative:
         speed_factor = - speed_factor
     return speed_factor
@@ -164,8 +164,9 @@ class Targeter(multiprocessing.Process):
                         if self.last_target_count > 0:
                             self.last_sound_time = play_target_lost_sound(self.last_sound_time)'''
                 else:
-                    if self.last_target_time is not None and time.time() - self.last_target_time > 2:
-                        self.move_turret(0, 0)
+                    #self.turret.tilt_at_speed(0)
+                    #if self.last_target_time is not None and time.time() - self.last_target_time > 2:
+                    self.move_turret(0, 0)
                     if self.last_move_time is None or time.time() - self.last_move_time >= 2:
                         if self.read_motion_queue():
                             continue
@@ -207,7 +208,7 @@ class Targeter(multiprocessing.Process):
         #self.turret.pan_relative_angle(x_angle)
         print("x_speed: %2d, y_speed: %2d" % (x_speed, y_speed))
         self.turret.pan_at_speed(x_speed)
-        #self.turret.tilt_at_speed(y_speed)
+        self.turret.tilt_at_speed(y_speed)
 
     def determine_closest(self):
         """Determine which of the targets is closest based on their pixel area within
@@ -251,7 +252,7 @@ class Targeter(multiprocessing.Process):
             for cnt in contours:
                 # Calculate area and remove small elements
                 area = cv2.contourArea(cnt)
-                if area > 10:
+                if area > 100:
                     # cv2.drawContours(frame, [cnt], -1, (0, 255, 0), 2)
                     x, y, w, h = cv2.boundingRect(cnt)
                     self.detections.append([x, y, w, h, w*h])
@@ -308,12 +309,19 @@ class Targeter(multiprocessing.Process):
 
     def set_status(self, status):
         self.status = status
-        self.turret.tilt_special(status)
+        #self.turret.tilt_at_speed(status)
         if status == Status.READY:
             self.last_sound_time = play_start_sound(self.last_sound_time)
         elif status == Status.OFFLINE:
+            self.turret.tilt_at_speed(-1)
+            time.sleep(1.6)
+            self.turret.tilt_at_speed(0)
             time.sleep(5)
-            self.turret.tilt_special(Status.READY)
+            self.turret.tilt_at_speed(4)
+            time.sleep(0.9)
+            self.turret.tilt_at_speed(0)
+            self.status = Status.READY
+            self.last_sound_time = play_start_sound(self.last_sound_time)
 
     def get_last_sound_time(self):
         return self.last_sound_time
