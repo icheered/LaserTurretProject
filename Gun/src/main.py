@@ -22,6 +22,7 @@ DISPLAY2_DATA = 32  # Datapin for shift register display 2
 DISPLAY3_DATA = 35  # Datapin for shift register display 3
 LASER = 16  # Laser diode
 VIBRATOR = 17  # Vibration motor
+RGBLED = 18 # RGB LED
 
 
 async def main():
@@ -43,6 +44,7 @@ async def main():
             d3data=DISPLAY3_DATA,
             laserPin=LASER,
             vibratorPin=VIBRATOR,
+            rgbledPin=RGBLED,
         )
         # gun = HandGun(
         #     id=userID, triggerPin=TRIGGER, reloadPin=RELOAD, lives=3, maxAmmo=10

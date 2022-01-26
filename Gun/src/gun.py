@@ -3,6 +3,7 @@ Gun object that holds the user's state (lives, ammo, team)
 """
 
 import machine
+import neopixel
 import uasyncio as asyncio
 
 from primitives.pushbutton import Pushbutton
@@ -44,19 +45,20 @@ class _Gun:
 
 class HandGun(_Gun):
     def __init__(
-        self,
-        id: int,
-        triggerPin: int,
-        reloadPin: int,
-        displayClockPin: int,
-        d1data: int,
-        d2data: int,
-        d3data: int,
-        laserPin: int,
-        vibratorPin: int,
-        team: int = 0,
-        lives: int = 0,
-        maxAmmo: int = 0,
+            self,
+            id: int,
+            triggerPin: int,
+            reloadPin: int,
+            displayClockPin: int,
+            d1data: int,
+            d2data: int,
+            d3data: int,
+            laserPin: int,
+            vibratorPin: int,
+            rgbledPin: int,
+            team: int = 0,
+            lives: int = 0,
+            maxAmmo: int = 0,
     ):
         super().__init__(id=id, team=team)
 
@@ -69,7 +71,7 @@ class HandGun(_Gun):
         self._d2dataPin = machine.Pin(d2data, machine.Pin.OUT)
         self._d3dataPin = machine.Pin(d3data, machine.Pin.OUT)
         self._laserPin = machine.Pin(laserPin, machine.Pin.OUT)
-        self._vibratorPin = machine.Pin(vibrationPin, machine.Pin.OUT)
+        self._vibratorPin = machine.Pin(vibratorPin, machine.Pin.OUT)
 
         trigPin = machine.Pin(triggerPin, machine.Pin.IN, machine.Pin.PULL_UP)
         self._triggerBtn = Pushbutton(trigPin)
@@ -78,6 +80,10 @@ class HandGun(_Gun):
         reloadPin = machine.Pin(reloadPin, machine.Pin.IN, machine.Pin.PULL_UP)
         self._reloadBtn = Pushbutton(reloadPin)
         self._reloadBtn.press_func(self._reload)
+
+        self.neoPixel = neopixel.NeoPixel(machine.Pin(rgbledPin), 8)
+        # Set RGB led to red
+        self._set_led(255, 0, 0)
 
         self._reloading = False
         self._updateDisplays()
@@ -89,6 +95,10 @@ class HandGun(_Gun):
 
     def _updateTeamColor(self):
         pass
+
+    def _set_led(self, r, g, b):
+        self.neoPixel[0] = (r, g, b)
+        self.neoPixel.write()
 
     async def _doVibration(self, duration):
         self._vibratorPin.value(1)
