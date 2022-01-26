@@ -11,7 +11,7 @@ tiltSpeed = 0
 
 p = select.poll()
 p.register(sys.stdin)
-speed_dict = {-4: -100, -3: -55, -2: -32, -1: -16, 0: 0, 1: 12, 2: 24, 3: 48, 4: 100}
+speed_dict = {-5: -43, -4: -32, -2: -24, -1: -16, 0: 0, 1: 12, 2: 18, 4: 24, 5: 36}
 opcode = bytearray()
 message = bytearray()
 count = 0
