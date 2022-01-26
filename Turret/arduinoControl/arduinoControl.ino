@@ -7,6 +7,7 @@
 #define COUNT_LIM_NUMERATOR 1000 // maxspeed * 5 for max ~180RPM
 #define ACCEL_CONSTANT 40
 #define MIN_SPEED 4
+#define MOVEMENT_DETECTION 7
 
 
 // SETTINGS
@@ -70,6 +71,23 @@ void loop() {
       braking = false;
       setAngle = angle + (incomingByte[1]<<8) + (incomingByte[2]); 
       Serial.println(setAngle);
+    } else if (opMode == MOVEMENT_DETECTION) {
+        short receivedAngle = (incomingByte[1]<<8) + incomingByte[2];
+        short transformedAngle = angle;
+        if (angle < 0) {
+            transformedAngle = 148 - angle
+        }
+        short difference = transformedAngle - receivedAngle
+        // Turn left
+        if ((difference > 0 && ((transformedAngle - receivedAngle) < 74))
+            || (difference < 0 && (abs(transformedAngle - receivedAngle) > 74)) ) {
+            setValue = -10;
+        } else {
+            // Turn right
+            setValue = 10;
+        }
+        Serial.println(setValue);
+
     }
     interrupts();
   }
