@@ -206,7 +206,7 @@ class Targeter(multiprocessing.Process):
         y_speed = get_y_speed(y_error)
         #print("x_angle: %2d, y_speed: %2d" % (x_angle, y_speed))
         #self.turret.pan_relative_angle(x_angle)
-        print("x_speed: %2d, y_speed: %2d" % (x_speed, y_speed))
+        #print("x_speed: %2d, y_speed: %2d" % (x_speed, y_speed))
         self.turret.pan_at_speed(x_speed)
         self.turret.tilt_at_speed(y_speed)
 
@@ -313,15 +313,17 @@ class Targeter(multiprocessing.Process):
         if status == Status.READY:
             self.last_sound_time = play_start_sound(self.last_sound_time)
         elif status == Status.OFFLINE:
+            self.move_turret(0,0)
+            play_hit_sound(None)
             self.turret.tilt_at_speed(-1)
             time.sleep(1.6)
             self.turret.tilt_at_speed(0)
             time.sleep(5)
             self.turret.tilt_at_speed(4)
+            self.last_sound_time = play_start_sound(self.last_sound_time)
             time.sleep(0.9)
             self.turret.tilt_at_speed(0)
             self.status = Status.READY
-            self.last_sound_time = play_start_sound(self.last_sound_time)
 
     def get_last_sound_time(self):
         return self.last_sound_time
