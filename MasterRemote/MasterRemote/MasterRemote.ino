@@ -1,7 +1,15 @@
 
 #include <IRremoteESP8266.h>
 #include <IRsend.h>
-IRsend irsend(4);
+
+#include <SPI.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+#define ARRAYSIZE 10
+String stateNames[ARRAYSIZE] = { "Team", "Ammo", "Lives" };
+
+IRsend irsend(0); // D3
 
 #define encoderA 12   // D5
 #define encoderB 14   // D6
@@ -17,11 +25,14 @@ int inValue = 0; // Keep track of changing state or value
 int state = 0; // 0: Change team, 1: Change ammo, 2: Change lives
 int value = 0;
 
+Adafruit_SSD1306 display = Adafruit_SSD1306(128, 32, &Wire);
 
 
 void setup() {
+  Serial.println("Setup");
   Serial.begin(115200, SERIAL_8N1, SERIAL_TX_ONLY);
-  
+
+  Serial.println("Setup 2");
   pinMode (encoderA,INPUT);
   pinMode (encoderB,INPUT);
   pinMode (encoderBTN,INPUT);
@@ -29,6 +40,15 @@ void setup() {
   rotaryButtonState = digitalRead(encoderBTN);
   
   irsend.begin();
+
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+  Serial.println("OLED begun");
+  display.display();
+  delay(1000);
+
+  // Clear the buffer.
+  display.clearDisplay();
+  display.display();
 }
 
 int i = 0;
@@ -38,7 +58,11 @@ void loop() {
   int encoderChange = getEncoderChange();
   updateStateOrValue(encoderChange);
   updateRotaryClicked();
-  
+
+  display.clearDisplay();
+  updateScreen();
+  display.display();
+
   sendValue();
 
   if(i == 5000) {
@@ -50,7 +74,29 @@ void loop() {
     Serial.println(value);
     i = 0;
   }
-  
+}
+
+void updateScreen() {
+  if(inValue) {
+    display.setTextSize(1);
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(0,0);
+    display.println(stateNames[state]);
+    display.setTextSize(2);
+    display.println(value);    
+  } else {
+    display.setTextSize(1);
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(0,0);
+    if(state==0) {display.print(">> ");} else {display.print("   ");}
+    display.println("Team");
+    if(state==1) {display.print(">> ");} else {display.print("   ");}
+    display.println("Ammo");
+    if(state==2) {display.print(">> ");} else {display.print("   ");}
+    display.println("Lives");
+  }
+
+  display.display();
 }
 
 void updateRotaryClicked() {
