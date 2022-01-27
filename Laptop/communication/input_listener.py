@@ -13,9 +13,27 @@ class InputListener(threading.Thread):
         self.targeter = targeter
 
     def run(self):
+        buffer = []
+        readingMessage = False
         while True:
             received_bytes = self.listener.read()
-            if received_bytes[0] == 6:
-                self.motion_sensor.set_detected(received_bytes)
-            elif received_bytes[0] == 7:
-                self.targeter.set_status(Status.OFFLINE)
+
+            if readingMessage:
+                buffer.append(received_bytes)
+            
+            if received_bytes[0] == 20:
+                readingMessage = True
+            
+            if received_bytes[0] == 21:
+                readingMessage == False
+
+                if buffer[0] == 6:
+                    self.motion_sensor.set_detected(buffer)
+                elif buffer[0] == 7:
+                    self.targeter.set_status(Status.OFFLINE)
+                
+                buffer = []
+            
+            
+
+            

@@ -16,4 +16,5 @@ class Messenger:
         """Open the serial port to read a message and then close the port.
         :returns: the message read from the serial port"""
         msg = self.ser.read(1)
+        
         return msg
