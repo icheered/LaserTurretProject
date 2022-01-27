@@ -25,7 +25,7 @@ class InputListener(threading.Thread):
                 readingMessage = True
             
             if received_bytes[0] == 21:
-                readingMessage == False
+                readingMessage = False
 
                 if buffer[0] == 6:
                     self.motion_sensor.set_detected(buffer)
