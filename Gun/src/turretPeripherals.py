@@ -21,7 +21,7 @@ class SerialCommunicator:
 
     def send(self, opcode, data):
         frame = bytearray([opcode, data])
-        print("Writing to serial: " + str(frame))
+        #print("Writing to serial: " + str(frame))
         sys.stdout.write(frame)
 
     async def doReceive(self):

@@ -23,15 +23,15 @@ class Communicator:
         self._messageCallback = messageHandler
 
     def receive(self, data, addr, ctrl):
-        print("IR Message is received")
+        #print("IR Message is received")
         if data < 0:  # NEC protocol sends repeat codes.
-            print("Repeat code.")
+            #print("Repeat code.")
         elif self._messageCallback is None:
-            print("messagehandler callback wasn't initialized")
+            #print("messagehandler callback wasn't initialized")
         else:
-            print("Data {:02x} Addr {:04x}".format(data, addr))
+            #print("Data {:02x} Addr {:04x}".format(data, addr))
             asyncio.create_task(self._messageCallback(data=data, addr=addr))
 
     async def transmit(self, address, data):
-        # print("Sending: " + str(data) + ", to: " + str(address))
+        # #print("Sending: " + str(data) + ", to: " + str(address))
         self._transmitter.transmit(address, data)
