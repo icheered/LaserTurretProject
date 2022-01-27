@@ -6,9 +6,9 @@ import threading
 
 
 class InputListener(threading.Thread):
-    def __init__(self, motion_sensor, targeter):
+    def __init__(self, motion_sensor, targeter, messenger):
         threading.Thread.__init__(self)
-        self.listener = Messenger()
+        self.listener = messenger
         self.motion_sensor = motion_sensor
         self.targeter = targeter
 
@@ -17,15 +17,19 @@ class InputListener(threading.Thread):
         readingMessage = False
         while True:
             received_bytes = self.listener.get_message()
+            print(received_bytes)
 
             if readingMessage:
                 buffer.append(received_bytes)
             
             if received_bytes[0] == 20:
+                print("Starting to read message")
                 readingMessage = True
             
             if received_bytes[0] == 21:
-                readingMessage == False
+                print("Stopping to read message")
+                readingMessage = False
+                print(buffer)
 
                 if buffer[0] == 6:
                     self.motion_sensor.set_detected(buffer)

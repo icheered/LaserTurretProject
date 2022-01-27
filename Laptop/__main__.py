@@ -1,5 +1,5 @@
 """codeauthor:: Brand Hauser"""
-from communication.input_listener import InputListener
+
 from data.values import Status
 import sys
 from pathlib import Path
@@ -8,6 +8,7 @@ file = Path(__file__).resolve()
 package_root_directory = file.parents[1]
 sys.path.append(str(package_root_directory))
 
+from communication.input_listener import InputListener
 from targeting.targeter import Targeter
 from data.values import Status, Direction
 import time
@@ -60,7 +61,7 @@ if __name__ == '__main__':
     motion_detector = MotionSensor(motion_queue)
 
     # Create IR listener
-    motionListener = InputListener(motion_detector)
+    motionListener = InputListener(motion_detector, targeter, tilt_messenger)
 
     # Start required threads
     motionListener.start()
