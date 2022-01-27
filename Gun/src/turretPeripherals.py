@@ -38,6 +38,7 @@ class SerialCommunicator:
                 await self._messageHandler(opcode=self.opcode, message=self.message)
                 self.count = 0
                 self.message = bytearray()
+                self.opcode = bytearray()
             await asyncio.sleep(0.1)
 
 
