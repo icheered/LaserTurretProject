@@ -15,6 +15,9 @@ def play_hit_sound(last_sound_time):
         directory = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'Sounds', 'free', 'hit'))
         sound_clip = directory + "/" + random.choice(os.listdir(directory))
         play_file(sound_clip, block=False)
+        return time.time()
+    else:
+        return last_sound_time
 
 
 def play_start_sound(last_sound_time):
@@ -23,8 +26,10 @@ def play_start_sound(last_sound_time):
     if last_sound_time is None or time.time() - last_sound_time > 5:
         directory = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'Sounds', 'free', 'start'))
         sound_clip = directory + "/" + random.choice(os.listdir(directory))
-        print(sound_clip)
         play_file(sound_clip, block=False)
+        return time.time()
+    else:
+        return last_sound_time
 
 
 def play_target_detected_sound(last_sound_time):
@@ -34,21 +39,30 @@ def play_target_detected_sound(last_sound_time):
         directory = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'Sounds', 'free', 'target found'))
         sound_clip = directory + "/" + random.choice(os.listdir(directory))
         play_file(sound_clip, block=False)
+        return time.time()
+    else:
+        return last_sound_time
 
 
 def play_laser_fire_sound(last_sound_time):
     """Randomly select and play a sound from the list generated for when the
     turret shoots at a player."""
-    if last_sound_time is None or time.time() - last_sound_time > 5:
+    if last_sound_time is None or time.time() - last_sound_time > 2:
         directory = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'Sounds', 'free', 'fire'))
         sound_clip = directory + "/" + random.choice(os.listdir(directory))
         play_file(sound_clip, block=False)
+        return time.time()
+    else:
+        return last_sound_time
 
 
 def play_target_lost_sound(last_sound_time):
     """Randomly select and play a sound from the list generated for when the
     turret loses sight of the target."""
-    if last_sound_time is None or time.time() - last_sound_time > 5:
+    if last_sound_time is None or time.time() - last_sound_time > 10:
         directory = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'Sounds', 'free', 'target lost'))
         sound_clip = directory + "/" + random.choice(os.listdir(directory))
         play_file(sound_clip, block=False)
+        return time.time()
+    else:
+        return last_sound_time

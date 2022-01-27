@@ -16,3 +16,6 @@ class Messenger:
 
     def clear_queue(self):
         self.message_queue.clear()
+
+    def is_empty(self):
+        return len(self.message_queue) == 0
