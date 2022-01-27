@@ -1,7 +1,6 @@
 from machine import Pin, PWM
 import sys
 import uasyncio as asyncio
-from struct import unpack
 import select
 
 

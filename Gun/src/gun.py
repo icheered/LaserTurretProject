@@ -5,6 +5,7 @@ import time
 import machine
 import neopixel
 import uasyncio as asyncio
+from struct import unpack
 
 from primitives.pushbutton import Pushbutton
 from turretPeripherals import MotionDetector, SerialCommunicator, TiltMotor
