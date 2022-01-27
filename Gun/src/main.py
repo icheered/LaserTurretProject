@@ -13,7 +13,6 @@ TURRET = 23  # If tied to ground ESP is turret, else Handgun
 TRIGGER = 26  # Shooting      (Handgun only)
 RELOAD = 27  # Reloading     (Handgun only)
 MOTION = [15, 2, 0, 4]  # Motion detection          (Turret only)
-TILT = 25  # Tilt motor control pin    (Turret only)
 TRANSMIT = 12  # IR Tranmitter pin
 RECEIVE = 14  # IR Receiver pin
 DISPLAY_CLK = 13  # Clock pulse for shift registers
@@ -50,7 +49,7 @@ async def main():
         )
     else:
         print("Creating turret")
-        gun = Turret(id=userID, motionPins=MOTION, pwmTiltPin=TILT)
+        gun = Turret(id=userID, motionPins=MOTION)
 
     print("Creating IR communicator")
     ir = Communicator(transmitPin=TRANSMIT, receivePin=RECEIVE)

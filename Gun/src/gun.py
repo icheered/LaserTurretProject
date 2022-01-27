@@ -8,7 +8,7 @@ import uasyncio as asyncio
 from struct import unpack
 
 from primitives.pushbutton import Pushbutton
-from turretPeripherals import MotionDetector, SerialCommunicator, TiltMotor
+from turretPeripherals import MotionDetector, SerialCommunicator
 
 
 class _Gun:
@@ -88,6 +88,7 @@ class HandGun(_Gun):
 
         self.neoPixel = neopixel.NeoPixel(machine.Pin(rgbledPin), 8)
 
+        self._brightness = 255
         self._updateTeamColor()
 
         self._reloading = False
@@ -100,13 +101,13 @@ class HandGun(_Gun):
 
     def _updateTeamColor(self):
         if self._team == 0:
-            self._set_led(100, 100, 100) # White
+            self._set_led(self._brightness, self._brightness, self._brightness) # White
         elif self._team == 1:
-            self._set_led(255, 0, 0) # Red
+            self._set_led(self._brightness, 0, 0) # Red
         elif self._team == 2:
-            self._set_led(0, 0, 255) # Blue
+            self._set_led(0, 0, self._brightness) # Blue
         elif self._team == 3:
-            self._set_led(0, 255, 0) # Blue
+            self._set_led(0, self._brightness, 0) # Blue
         else:
             print("Team color is not defined")
 
@@ -192,6 +193,9 @@ class HandGun(_Gun):
             self._lives = value
             print("Lives set to: " + str(self._lives))
             self._updateDisplays()
+        elif command == 3: # Handle setting LED brightness
+            self._brightness = value
+            self._updateTeamColor()
         else:
             print(
                 "Unexpected special command. Addr: "
@@ -210,12 +214,11 @@ class HandGun(_Gun):
 
 
 class Turret(_Gun):
-    def __init__(self, id: int, motionPins: list, pwmTiltPin: int, team: int = 0):
+    def __init__(self, id: int, motionPins: list, team: int = 0):
         super().__init__(id=id, team=team)
         # Instantiate peripherals
         self._motionDetector = MotionDetector(motionDetectorPins=motionPins)
         self._serialCom = SerialCommunicator()
-        self._tiltMotor = TiltMotor(pwmTiltPin=pwmTiltPin)
 
         # Inject callback functions
         self._serialCom.setHandlerCallback(self._handleSerialInput)
@@ -230,10 +233,6 @@ class Turret(_Gun):
     async def _handleSerialInput(self, opcode, message):
         print("Receiving serial input")
         print("Opcode: " + str(opcode) + ", Message: " + str(message))
-        if opcode[0] == 0:  # Tilt_WPM_Opcode
-            tiltSpeed = unpack(">h", message)
-            speed_dict = {-5: -43, -4: -32, -2: -24, -1: -16, 0: 0, 1: 12, 2: 18, 4: 24, 5: 36}
-            self._tiltMotor.setTilt(int(speed_dict.get(tiltSpeed[0])/4))
         if opcode[0] == 5:  # SHOOT
             await self._shoot()
 
