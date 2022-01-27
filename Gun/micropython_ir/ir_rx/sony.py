@@ -34,7 +34,7 @@ class SONY_ABC(IR_RX):  # Abstract base class
             if not 350 < width < 1000:  # 600μs space
                 raise RuntimeError(self.BADSTART)
 
-            val = 0  # Data received, LSB 1st
+            val = 0  # data received, LSB 1st
             x = 2
             bit = 1
             while x <= nedges - 2:
