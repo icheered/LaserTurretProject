@@ -65,7 +65,7 @@ class IR:
             if addr > self.valid[0] or addr < 0:
                 raise ValueError('Address out of range', addr)
             if data > self.valid[1] or data < 0:
-                raise ValueError('Data out of range', data)
+                raise ValueError('data out of range', data)
             if toggle > self.valid[2] or toggle < 0:
                 raise ValueError('Toggle out of range', toggle)
         self.aptr = 0  # Inital conditions for tx: index into array
