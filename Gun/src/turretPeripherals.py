@@ -20,7 +20,9 @@ class SerialCommunicator:
         self._messageHandler = callback
 
     def send(self, opcode, data):
-        frame = bytearray([opcode, data])
+        startbyte = 0
+        endbyte = 0
+        frame = bytearray([startbyte, opcode, data, endbyte])
         #print("Writing to serial: " + str(frame))
         sys.stdout.write(frame)
 
