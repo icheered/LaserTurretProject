@@ -89,7 +89,7 @@ def callback(data, addr, ctrl):
     if data < 0:  # NEC protocol sends repeat codes.
         print('Repeat code.')
     else:
-        print('Data {:02x} Addr {:04x}'.format(data, addr))
+        print('data {:02x} Addr {:04x}'.format(data, addr))
 
 ir = NEC_8(Pin('X3', Pin.IN), callback)
 while True:

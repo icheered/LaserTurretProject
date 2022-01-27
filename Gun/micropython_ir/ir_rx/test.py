@@ -33,7 +33,7 @@ def cb(data, addr, ctrl):
     if data < 0:  # NEC protocol sends repeat codes.
         print('Repeat code.')
     else:
-        print('Data {:02x} Addr {:04x} Ctrl {:02x}'.format(data, addr, ctrl))
+        print('data {:02x} Addr {:04x} Ctrl {:02x}'.format(data, addr, ctrl))
 
 def test(proto=0):
     classes = (NEC_8, NEC_16, SONY_12, SONY_15, SONY_20, RC5_IR, RC6_M0, MCE)
