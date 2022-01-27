@@ -27,13 +27,13 @@ RGBLED = 18 # RGB LED
 
 async def main():
     userID = random.randint(100, 65535)
-    #print("UserID: " + str(userID))
+    print("UserID: " + str(userID))
 
     # Initialize gun and communicator
     turretPin = machine.Pin(TURRET, machine.Pin.IN, machine.Pin.PULL_UP)
     gun = None
     if turretPin.value():
-        #print("Creating handgun")
+        print("Creating handgun")
         gun = HandGun(
             id=userID,
             triggerPin=TRIGGER,
@@ -49,31 +49,31 @@ async def main():
             maxAmmo=20,
         )
     else:
-        #print("Creating turret")
+        print("Creating turret")
         gun = Turret(id=userID, motionPins=MOTION, pwmTiltPin=TILT)
 
-    #print("Creating IR communicator")
+    print("Creating IR communicator")
     ir = Communicator(transmitPin=TRANSMIT, receivePin=RECEIVE)
 
     # Inject callbacks
-    #print("Injecting callbacks")
+    print("Injecting callbacks")
     gun.setTransmitCallback(transmitCallback=ir.transmit)
     ir.setMessagehandlerCallback(messageHandler=gun._handleMessage)
 
-    #print("Starting gun")
+    print("Starting gun")
     # Start the gun
     gun.start()
 
     # Forever block to keep async services running
     while True:
         await asyncio.sleep(60)
-        #print("Heartbeat: Program is still running")
+        print("Heartbeat: Program is still running")
 
 
 time.sleep(1)
-#print("Starting")
+print("Starting")
 try:
     asyncio.run(main())
 except KeyboardInterrupt:
-    #print("Got ctrl-c")
+    print("Got ctrl-c")
     asyncio.new_event_loop()

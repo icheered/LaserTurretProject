@@ -26,7 +26,7 @@ class _Gun:
         self._transmitCallback = transmitCallback
 
     async def _handleMessage(self, data: int, addr: int):
-        #print("Handling message")
+        print("Handling message")
         if addr < 100:
             await self._handleConfiguration(command=addr, value=data)
         else:
@@ -107,7 +107,7 @@ class HandGun(_Gun):
         elif self._team == 3:
             self._set_led(0, 255, 0) # Blue
         else:
-            #print("Team color is not defined")
+            print("Team color is not defined")
 
     def _set_led(self, r, g, b):
         self.neoPixel.fill((r, g, b))
@@ -124,7 +124,7 @@ class HandGun(_Gun):
         self._laserPin.value(0)
 
     async def _shoot(self):
-        #print("Shooting")
+        print("Shooting")
         if self._shooting:
             return
         if self._ammo < 1:
@@ -140,14 +140,14 @@ class HandGun(_Gun):
             await self._transmitCallback(address=self._id, data=self._team)
         self._ammo -= 1
         self._updateDisplays()
-        #print("Done shooting. Ammo: " + str(self._ammo))
+        print("Done shooting. Ammo: " + str(self._ammo))
         self._shooting = False
 
     async def _reload(self):
         if self._reloading:
             return
 
-        #print("Reloading")
+        print("Reloading")
         self._reloading = True
         for i in range(4):
             await self._doVibration(0.5)
@@ -159,14 +159,14 @@ class HandGun(_Gun):
 
         self._ammo = self._maxAmmo
         self._updateDisplays()
-        #print("Done reloading. Ammo: " + str(self._ammo))
+        print("Done reloading. Ammo: " + str(self._ammo))
         self._reloading = False
 
     async def _getShot(self, player: int, team: int):
         # Handle getting hit
-        #print("Got hit by player " + str(player) + " from team " + str(team))
+        print("Got hit by player " + str(player) + " from team " + str(team))
         if team == self._team and team != 0:
-            #print("Got hit by same team, ignoring")
+            print("Got hit by same team, ignoring")
             return
 
         if self._lives < 1:
@@ -176,23 +176,23 @@ class HandGun(_Gun):
         self._lives -= 1
         self._updateDisplays()
         await self._doVibration(2)
-        #print("Lives: " + str(self._lives))
+        print("Lives: " + str(self._lives))
 
     async def _handleConfiguration(self, command: int, value: int):
-        #print("Handling configuration change")
+        print("Handling configuration change")
         if command == 0:  # Handle setting team
             self._team = value
-            #print("Team set to: " + str(self._team))
+            print("Team set to: " + str(self._team))
             self._updateTeamColor()
         elif command == 1:  # Handle setting max ammo
             self._maxAmmo = value
-            #print("Max ammo set to: " + str(self._maxAmmo))
+            print("Max ammo set to: " + str(self._maxAmmo))
         elif command == 2:  # Handle (re)setting lives
             self._lives = value
-            #print("Lives set to: " + str(self._lives))
+            print("Lives set to: " + str(self._lives))
             self._updateDisplays()
         else:
-            #print(
+            print(
                 "Unexpected special command. Addr: "
                 + str(command)
                 + ", Data: "
@@ -201,10 +201,10 @@ class HandGun(_Gun):
 
     async def _handleOutOfAmmo(self):
         # TODO Play sound or blink LED or something
-        #print("Out of ammo")
+        print("Out of ammo")
 
     async def _handleDead(self):
-        #print("You're dead")
+        print("You're dead")
         await self._doVibration(10)
 
 
@@ -222,13 +222,13 @@ class Turret(_Gun):
 
     def start(self):
         # Initiate background functions
-        #print("Starting serial com and motiondetector")
+        print("Starting serial com and motiondetector")
         asyncio.create_task(self._serialCom.doReceive())
         asyncio.create_task(self._motionDetector.doDetection())
 
     async def _handleSerialInput(self, opcode, message):
-        #print("Receiving serial input")
-        #print("Opcode: " + str(opcode) + ", Message: " + str(message))
+        print("Receiving serial input")
+        print("Opcode: " + str(opcode) + ", Message: " + str(message))
         if opcode[0] == 0:  # Tilt_WPM_Opcode
             tiltSpeed = unpack(">h", message)
             speed_dict = {-5: -43, -4: -32, -2: -24, -1: -16, 0: 0, 1: 12, 2: 18, 4: 24, 5: 36}
@@ -237,7 +237,7 @@ class Turret(_Gun):
             await self._shoot()
 
     async def _shoot(self):
-        #print("Shooting")
+        print("Shooting")
         if self._shooting:
             return
 
@@ -245,9 +245,9 @@ class Turret(_Gun):
         for i in range(3):  # Transmission takes 67.5ms
             await self._transmitCallback(address=self._id, data=self._team)
 
-        #print("Done shooting")
+        print("Done shooting")
         self._shooting = False
 
     async def _getShot(self, player: int, team: int):
-        #print("Got shot by player: " + str(player) + ", of team: " + str(team))
+        print("Got shot by player: " + str(player) + ", of team: " + str(team))
         self._serialCom.send(opcode=7, data=1)

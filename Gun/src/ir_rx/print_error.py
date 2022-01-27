@@ -14,6 +14,6 @@ _errors = {IR_RX.BADSTART : 'Invalid start pulse',
 
 def print_error(data):
     if data in _errors:
-        #print(_errors[data])
+        print(_errors[data])
     else:
-        #print('Unknown error code:', data)
+        print('Unknown error code:', data)

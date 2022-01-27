@@ -6,7 +6,7 @@ from primitives.pushbutton import Pushbutton
 
 
 async def receiveMessage(addr, data):
-    #print("Received " + str(data) + " from " + str(addr))
+    print("Received " + str(data) + " from " + str(addr))
 
 
 async def main():
@@ -18,7 +18,7 @@ async def main():
     someData = 0
 
     async def sendMessage():
-        #print("Sending")
+        print("Sending")
         await ir.transmit(address=someAddress, data=someData)
 
     # Create a button that waits for an external interrupt
@@ -28,16 +28,16 @@ async def main():
 
     while True:
         await asyncio.sleep(60)
-        #print("Still running...")
+        print("Still running...")
 
 
 import time
 
 time.sleep(3)
-#print("Starting")
+print("Starting")
 
 try:
     asyncio.run(main())
 except KeyboardInterrupt:
-    #print("Got ctrl-c")
+    print("Got ctrl-c")
     asyncio.new_event_loop()

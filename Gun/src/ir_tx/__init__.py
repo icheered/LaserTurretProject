@@ -74,7 +74,7 @@ class IR:
         self.trigger()  # Initiate transmission
         if self.timeit:
             dt = ticks_diff(ticks_us(), t)
-            #print('Time = {}μs'.format(dt))
+            print('Time = {}μs'.format(dt))
 
     # Subclass interface
     def trigger(self):  # Used by NEC to initiate a repeat frame
@@ -93,10 +93,10 @@ class IR:
             self._arr[self.aptr] = t
             self.aptr += 1
             self.carrier = not self.carrier  # Keep track of carrier state
-            self.verbose and #print('append', t, 'carrier', self.carrier)
+            self.verbose and print('append', t, 'carrier', self.carrier)
 
     def add(self, t):  # Increase last time value (for biphase)
         assert t > 0
-        self.verbose and #print('add', t)
+        self.verbose and print('add', t)
         # .carrier unaffected
         self._arr[self.aptr - 1] += t
