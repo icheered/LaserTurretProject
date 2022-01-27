@@ -207,7 +207,7 @@ class Targeter(multiprocessing.Process):
         #print("x_angle: %2d, y_speed: %2d" % (x_angle, y_speed))
         #self.turret.pan_relative_angle(x_angle)
         #print("x_speed: %2d, y_speed: %2d" % (x_speed, y_speed))
-        self.turret.pan_at_speed(x_speed)
+        #self.turret.pan_at_speed(x_speed)
         self.turret.tilt_at_speed(y_speed)
 
     def determine_closest(self):
