@@ -1,7 +1,7 @@
 import multiprocessing
 
 from data.values import Status
-from messaging.serial_listener import Messenger
+from messaging.serial_messenger import Messenger
 import threading
 
 
@@ -16,7 +16,7 @@ class InputListener(threading.Thread):
         buffer = []
         readingMessage = False
         while True:
-            received_bytes = self.listener.read()
+            received_bytes = self.listener.get_message()
 
             if readingMessage:
                 buffer.append(received_bytes)
