@@ -61,15 +61,15 @@ void loop() {
     // retreive send value (16 bits)
     if (opMode == PAN_SPEED) {
       setValue = (incomingByte[1]<<8) + (incomingByte[2]); 
-      Serial.println(setValue);
+      //Serial.println(setValue);
     } else if (opMode == PAN_ANGLE_ABS) {
       setAngle = (incomingByte[1]<<8) + (incomingByte[2]); 
       braking = false;
-      Serial.println(setAngle);
+      //Serial.println(setAngle);
     } else if (opMode == PAN_ANGLE_REL) {
       braking = false;
       setAngle = angle + (incomingByte[1]<<8) + (incomingByte[2]); 
-      Serial.println(setAngle);
+      //Serial.println(setAngle);
     }
     interrupts();
   }
