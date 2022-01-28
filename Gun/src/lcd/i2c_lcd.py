@@ -22,7 +22,10 @@ class I2cLcd(LcdApi):
     def __init__(self, i2c, i2c_addr, num_lines, num_columns):
         self.i2c = i2c
         self.i2c_addr = i2c_addr
-        self.i2c.writeto(self.i2c_addr, bytearray([0]))
+        try:
+            self.i2c.writeto(self.i2c_addr, bytearray([0]))
+        except Exception as e:
+            print(e)
         sleep_ms(20)   # Allow LCD time to powerup
         # Send reset 3 times
         self.hal_write_init_nibble(self.LCD_FUNCTION_RESET)

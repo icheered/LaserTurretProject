@@ -1,78 +1,65 @@
-import random
+"""Implements a HD44780 character LCD connected via PCF8574 on I2C."""
+
+from lcd.i2c_lcd import I2cLcd
 import time
+from machine import I2C
 
-import machine
-import uasyncio as asyncio
+# The PCF8574 has a jumper selectable address: 0x20 - 0x27
+DEFAULT_I2C_ADDR = 0x27
 
-from gun import HandGun, Turret
-from ir_com import Communicator
-from turretPeripherals import SerialCommunicator
+print("start up")
+def test_main():
+    """Test function for verifying basic functionality."""
+    i2c = I2C(0, freq=10000)
+    print(i2c)
+    lcd = I2cLcd(i2c, DEFAULT_I2C_ADDR, 2, 16)
+    lcd.blink_cursor_on()
+    lcd.putstr("It Works!\nSecond Line")
+    time.sleep(3)
+    lcd.clear()
 
-# Pin definitions
-TURRET = 23  # If tied to ground ESP is turret, else Handgun
-TRIGGER = 26  # Shooting      (Handgun only)
-RELOAD = 27  # Reloading     (Handgun only)
-MOTION = [15, 2, 0, 4]  # Motion detection          (Turret only)
-TRANSMIT = 12  # IR Tranmitter pin
-RECEIVE = 14  # IR Receiver pin
-DISPLAY_CLK = 13  # Clock pulse for shift registers
-DISPLAY1_DATA = 33  # Datapin for shift register display 1
-DISPLAY2_DATA = 32  # Datapin for shift register display 2
-DISPLAY3_DATA = 35  # Datapin for shift register display 3
-LASER = 16  # Laser diode
-VIBRATOR = 17  # Vibration motor
-RGBLED = 18 # RGB LED
+    # custom characters: battery icons - 5 wide, 8 tall
+    lcd.custom_char(0, bytearray([0x0E, 0x1B, 0x11, 0x11, 0x11, 0x11, 0x11, 0x1F]))  # 0% Empty
+    lcd.custom_char(1, bytearray([0x0E, 0x1B, 0x11, 0x11, 0x11, 0x11, 0x1F, 0x1F]))  # 16%
+    lcd.custom_char(3, bytearray([0x0E, 0x1B, 0x11, 0x11, 0x1F, 0x1F, 0x1F, 0x1F]))  # 50%
+    lcd.custom_char(4, bytearray([0x0E, 0x1B, 0x11, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F]))  # 66%
+    lcd.custom_char(5, bytearray([0x0E, 0x1B, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F]))  # 83%
+    lcd.custom_char(6, bytearray([0x0E, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F]))  # 100% Full
+    lcd.custom_char(7, bytearray([0x0E, 0x1F, 0x1B, 0x1B, 0x1B, 0x1F, 0x1B, 0x1F]))  # ! Error
+    for i in range(8):
+        lcd.putchar(chr(i))
+    time.sleep(3)
+    lcd.clear()
+    lcd.blink_cursor_off()
 
-
-async def main():
-    userID = random.randint(100, 65535)
-    print("UserID: " + str(userID))
-
-    # Initialize gun and communicator
-    turretPin = machine.Pin(TURRET, machine.Pin.IN, machine.Pin.PULL_UP)
-    gun = None
-    if turretPin.value():
-        print("Creating handgun")
-        gun = HandGun(
-            id=userID,
-            triggerPin=TRIGGER,
-            reloadPin=RELOAD,
-            displayClockPin=DISPLAY_CLK,
-            d1data=DISPLAY1_DATA,
-            d2data=DISPLAY2_DATA,
-            d3data=DISPLAY3_DATA,
-            laserPin=LASER,
-            vibratorPin=VIBRATOR,
-            rgbledPin=RGBLED,
-            lives=3,
-            maxAmmo=20,
-        )
-    else:
-        print("Creating turret")
-        gun = Turret(id=userID, motionPins=MOTION)
-
-    print("Creating IR communicator")
-    ir = Communicator(transmitPin=TRANSMIT, receivePin=RECEIVE)
-
-    # Inject callbacks
-    print("Injecting callbacks")
-    gun.setTransmitCallback(transmitCallback=ir.transmit)
-    ir.setMessagehandlerCallback(messageHandler=gun._handleMessage)
-
-    print("Starting gun")
-    # Start the gun
-    gun.start()
-
-    # Forever block to keep async services running
+    count = 0
     while True:
-        await asyncio.sleep(60)
-        print("Heartbeat: Program is still running")
+        lcd.move_to(0, 0)
+        lcd.putstr(time.strftime('%b %d %Y\n%H:%M:%S', time.localtime()))
+        time.sleep(1)
+        count += 1
+        if count % 10 == 3:
+            print("Turning backlight off")
+            lcd.backlight_off()
+        if count % 10 == 4:
+            print("Turning backlight on")
+            lcd.backlight_on()
+        if count % 10 == 5:
+            print("Turning display off")
+            lcd.display_off()
+        if count % 10 == 6:
+            print("Turning display on")
+            lcd.display_on()
+        if count % 10 == 7:
+            print("Turning display & backlight off")
+            lcd.backlight_off()
+            lcd.display_off()
+        if count % 10 == 8:
+            print("Turning display & backlight on")
+            lcd.backlight_on()
+            lcd.display_on()
 
 
-time.sleep(1)
-print("Starting")
-try:
-    asyncio.run(main())
-except KeyboardInterrupt:
-    print("Got ctrl-c")
-    asyncio.new_event_loop()
+if __name__ == "__main__":
+    # test_main()
+    print("hallo world")

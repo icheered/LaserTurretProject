@@ -12,7 +12,7 @@ echo "Uploading files"
 echo "Uploading boot.py"
 ampy --port /dev/ttyUSB9 --baud 115200 put src/boot.py boot.py
 echo "Uploading main.py"
-ampy --port /dev/ttyUSB9 --baud 115200 put src/main.py main.py
+ampy --port /dev/ttyUSB9 --baud 115200 put src/__main.py __main.py
 
 echo "Making directories"
 ampy --port /dev/ttyUSB9 --baud 115200 mkdir ir_rx
