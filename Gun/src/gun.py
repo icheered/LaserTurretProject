@@ -107,7 +107,7 @@ class HandGun(_Gun):
         elif self._team == 2:
             self._set_led(0, 0, self._brightness) # Blue
         elif self._team == 3:
-            self._set_led(0, self._brightness, 0) # Blue
+            self._set_led(0, self._brightness, 0) # Green
         else:
             print("Team color is not defined")
 
@@ -195,6 +195,7 @@ class HandGun(_Gun):
             self._updateDisplays()
         elif command == 3: # Handle setting LED brightness
             self._brightness = value
+            print("Brightness set to: " + str(self._brightness))
             self._updateTeamColor()
         else:
             print(
