@@ -17,7 +17,7 @@ cascPath = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'haarc
 faceCascade = cv2.CascadeClassifier(cascPath)
 
 minimum_speed = 5
-
+game_time = 300
 
 def calculate_x_error(x):
     """Calculate the pixel distance between the center of the frame and the x
@@ -119,19 +119,17 @@ class Targeter(multiprocessing.Process):
         If not offline look for RGB beacon for targeting. If beacon_found then fire
         at the beacon.  If no beacons within view look for human.  If human_found
         follow that human.  Choose the closest target."""
-        cap = cv2.VideoCapture(4)
+        cap = cv2.VideoCapture(2)
         self.last_sound_time = time.time()
         self.pan_time_stamp = time.time()
         time_set = time.time()
         self.start_time = time.time()
         while True:
-            if time.time() - self.start_time >= 30 or self.lives == 0:
+            if time.time() - self.start_time >= game_time or self.lives == 0:
                 print("game over")
                 play_stop_sound()
                 return False
-            else:
-                print("running")
-            print("loop")
+   
             #self.targets.clear()
             self.detections.clear()
             beacon_found = False
@@ -234,7 +232,7 @@ class Targeter(multiprocessing.Process):
         start = time.time_ns()
         self.turret.pan_at_speed(x_speed)
         elapsed = (time.time_ns() - start) // 1000000
-        print("elapsed time: %2d" % elapsed)
+        #print("elapsed time: %2d" % elapsed)
         self.turret.tilt_at_speed(y_speed)
         self.last_move_command = (x_error, y_error)
 

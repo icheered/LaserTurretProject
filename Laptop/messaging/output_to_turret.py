@@ -18,11 +18,11 @@ class OutputToTurret:
         actions of the turret.
         :param output: 3 byte command where byte #1 = opcode & byte #2 = control value """
         self.pan_messenger.send(output)
-        print(f"pan: {output}")
+        #print(f"pan: {output}")
 
     def tilt_send(self, output):
         self.tilt_messenger.send(output)
-        print(f"Tilt send: {output}")
+        #print(f"Tilt send: {output}")
 
     def tilt_at_speed(self, speed):
         """Turret control command to tilt at a certain speed.
