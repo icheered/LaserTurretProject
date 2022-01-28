@@ -312,6 +312,7 @@ class Targeter(multiprocessing.Process):
         tracking a target.
         :param direction: enum value from data.values.py - Direction"""
         self.last_move_time = time.time()
+        print(f"Direction.value: {direction}")
         self.turret.pan_absolute_angle(direction)
         self.pan_time_stamp = time.time()
         self.pan_status = PanningOscillation.CENTER

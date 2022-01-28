@@ -21,7 +21,8 @@ class MotionSensor(threading.Thread):
     def run(self) -> None:
         while True:
             if self.received_bytes is not None:
-                direction = self.received_bytes[1]
+                direction = int.from_bytes(self.received_bytes[1], 'big')
+                print(f"Direction after sensing: {direction}")
             else:
                 direction = None
             if direction is not None and (direction != self.last_received_dir
@@ -38,7 +39,7 @@ class MotionSensor(threading.Thread):
 
                 time.sleep(0.3)
                 last_direction = direction
-                direction = self.received_bytes[1]
+                direction = int.from_bytes(self.received_bytes[1], 'big')
                 if direction != last_direction:
                     # Check if adjacent
                     if abs(direction - last_direction) % 3 == 1:
