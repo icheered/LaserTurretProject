@@ -2,7 +2,7 @@
 
 from lcd.i2c_lcd import I2cLcd
 import time
-from machine import I2C
+from machine import I2C, Pin
 
 # The PCF8574 has a jumper selectable address: 0x20 - 0x27
 DEFAULT_I2C_ADDR = 0x27
@@ -10,7 +10,7 @@ DEFAULT_I2C_ADDR = 0x27
 print("start up")
 def test_main():
     """Test function for verifying basic functionality."""
-    i2c = I2C(0, freq=10000)
+    i2c = I2C(sda=Pin(21), scl=Pin(22))
     print(i2c)
     lcd = I2cLcd(i2c, DEFAULT_I2C_ADDR, 2, 16)
     lcd.blink_cursor_on()
@@ -35,7 +35,6 @@ def test_main():
     count = 0
     while True:
         lcd.move_to(0, 0)
-        lcd.putstr(time.strftime('%b %d %Y\n%H:%M:%S', time.localtime()))
         time.sleep(1)
         count += 1
         if count % 10 == 3:
@@ -61,5 +60,4 @@ def test_main():
 
 
 if __name__ == "__main__":
-    # test_main()
-    print("hallo world")
+    test_main()
