@@ -7,7 +7,7 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #define ARRAYSIZE 10
-String stateNames[ARRAYSIZE] = { "Team", "Ammo", "Lives" };
+String stateNames[ARRAYSIZE] = { "Team", "Ammo", "Lives", "Brightness" };
 
 IRsend irsend(0); // D3
 
@@ -94,6 +94,8 @@ void updateScreen() {
     display.println("Ammo");
     if(state==2) {display.print(">> ");} else {display.print("   ");}
     display.println("Lives");
+    if(state==3) {display.print(">> ");} else {display.print("   ");}
+    display.println("Brightness");
   }
 
   display.display();
@@ -127,13 +129,14 @@ void updateStateOrValue(int encoderChange) {
   // Use encoder value to change the state or value parameter
   if(encoderChange == -1 || encoderChange == 1) {
     if(!inValue) { // Changing state
-      state = (state + encoderChange) % 3;
+      state = (state + encoderChange) % 4;
       if(state < 0) {state = 0;}
       value = 0;
     } else { // Changing value
       if(state == 0) { value = (value + encoderChange) % 3;}      // Changing team
       else if(state == 1) { value = (value + encoderChange) % 99;}// Changing ammo
       else if(state == 2) { value = (value + encoderChange) % 9;} // Changing lives
+      else if(state == 3) { value = (value + encoderChange) % 255;} // Changing brightness
       if(value < 0) {value = 0;}
     }
   }

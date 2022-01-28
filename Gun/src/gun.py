@@ -6,9 +6,12 @@ import machine
 import neopixel
 import uasyncio as asyncio
 from struct import unpack
+from lcd.i2c_lcd import I2cLcd
+import time
+from machine import SoftI2C, Pin
 
 from primitives.pushbutton import Pushbutton
-from turretPeripherals import MotionDetector, SerialCommunicator, TiltMotor
+from turretPeripherals import MotionDetector, SerialCommunicator
 
 
 class _Gun:
@@ -50,31 +53,26 @@ class HandGun(_Gun):
             id: int,
             triggerPin: int,
             reloadPin: int,
-            displayClockPin: int,
-            d1data: int,
-            d2data: int,
-            d3data: int,
             laserPin: int,
             vibratorPin: int,
             rgbledPin: int,
+            screenSCL: int,
+            screenSDA: int,
             team: int = 0,
             lives: int = 0,
             maxAmmo: int = 0,
+            *args,
     ):
         super().__init__(id=id, team=team)
 
         if maxAmmo == 0:
-            maxAmmo = 20
+            maxAmmo = 10
         if lives == 0:
             lives = 10
         self._maxAmmo = maxAmmo
         self._lives = lives
         self._ammo = self._maxAmmo
 
-        # self._displayCLKPin = machine.Pin(displayClockPin, machine.Pin.OUT)
-        # self._d1dataPin = machine.Pin(d1data, machine.Pin.OUT)
-        # self._d2dataPin = machine.Pin(d2data, machine.Pin.OUT)
-        # self._d3dataPin = machine.Pin(d3data, machine.Pin.OUT)
         self._laserPin = machine.Pin(laserPin, machine.Pin.OUT)
         self._vibratorPin = machine.Pin(vibratorPin, machine.Pin.OUT)
 
@@ -88,27 +86,39 @@ class HandGun(_Gun):
 
         self.neoPixel = neopixel.NeoPixel(machine.Pin(rgbledPin), 8)
 
+        self._brightness = 255
         self._updateTeamColor()
+
+        i2c = SoftI2C(sda=Pin(screenSDA), scl=Pin(screenSCL))
+        self.lcd = I2cLcd(i2c=i2c, i2c_addr=i2c.scan()[0], num_lines=2, num_columns=16)
 
         self._reloading = False
         self._updateDisplays()
 
     def _updateDisplays(self):
-        # Update the 2 ammo displays
-        # Update the life display
-        pass
+        self.lcd.clear()
+        self.lcd.putstr("Ammo: "+str(self._ammo)+ "/" + str(self._maxAmmo) + " \nLives: " + str(self._lives))
+    
+    async def _tempDisplay(self, text: str, duration: int = 3):
+        self.lcd.clear()
+        self.lcd.putstr(text)
+        await asyncio.sleep(duration)
+        self._updateDisplays()
 
-    def _updateTeamColor(self):
+    async def _updateTeamColor(self):
         if self._team == 0:
-            self._set_led(100, 100, 100) # White
+            self._set_led(self._brightness, self._brightness, self._brightness) # White
         elif self._team == 1:
-            self._set_led(255, 0, 0) # Red
+            self._set_led(self._brightness, 0, 0) # Red
         elif self._team == 2:
-            self._set_led(0, 0, 255) # Blue
+            self._set_led(0, 0, self._brightness) # Blue
         elif self._team == 3:
-            self._set_led(0, 255, 0) # Blue
+            self._set_led(0, self._brightness, 0) # Green
         else:
             print("Team color is not defined")
+        
+        asyncio.create_task(self._tempDisplay(text="Team: " + str(self._team) + "\n Brightness: " + str(self._brightness)))
+        
 
     def _set_led(self, r, g, b):
         self.neoPixel.fill((r, g, b))
@@ -150,6 +160,7 @@ class HandGun(_Gun):
 
         print("Reloading")
         self._reloading = True
+        asyncio.create_task(self._tempDisplay(text="Reloading...", duration=5))
         for i in range(4):
             await self._doVibration(0.5)
             await asyncio.sleep_ms(500)
@@ -173,6 +184,8 @@ class HandGun(_Gun):
         if self._lives < 1:
             await self._handleDead()
             return
+        
+        asyncio.create_task(self._tempDisplay(text="Got hit by team: " + str(team), duration=2))
 
         self._lives -= 1
         self._updateDisplays()
@@ -184,7 +197,7 @@ class HandGun(_Gun):
         if command == 0:  # Handle setting team
             self._team = value
             print("Team set to: " + str(self._team))
-            self._updateTeamColor()
+            await self._updateTeamColor()
         elif command == 1:  # Handle setting max ammo
             self._maxAmmo = value
             print("Max ammo set to: " + str(self._maxAmmo))
@@ -192,6 +205,10 @@ class HandGun(_Gun):
             self._lives = value
             print("Lives set to: " + str(self._lives))
             self._updateDisplays()
+        elif command == 3: # Handle setting LED brightness
+            self._brightness = value
+            print("Brightness set to: " + str(self._brightness))
+            await self._updateTeamColor()
         else:
             print(
                 "Unexpected special command. Addr: "
@@ -202,20 +219,21 @@ class HandGun(_Gun):
 
     async def _handleOutOfAmmo(self):
         # TODO Play sound or blink LED or something
+        asyncio.create_task(self._tempDisplay(text="Out of ammo!\nClick reload", duration=1))
         print("Out of ammo")
 
     async def _handleDead(self):
+        asyncio.create_task(self._tempDisplay(text="You're dead!\nGo get a life!", duration=10))
         print("You're dead")
         await self._doVibration(10)
 
 
 class Turret(_Gun):
-    def __init__(self, id: int, motionPins: list, pwmTiltPin: int, team: int = 0):
+    def __init__(self, id: int, motionPins: list, team: int = 0):
         super().__init__(id=id, team=team)
         # Instantiate peripherals
         self._motionDetector = MotionDetector(motionDetectorPins=motionPins)
         self._serialCom = SerialCommunicator()
-        self._tiltMotor = TiltMotor(pwmTiltPin=pwmTiltPin)
 
         # Inject callback functions
         self._serialCom.setHandlerCallback(self._handleSerialInput)
@@ -230,10 +248,6 @@ class Turret(_Gun):
     async def _handleSerialInput(self, opcode, message):
         print("Receiving serial input")
         print("Opcode: " + str(opcode) + ", Message: " + str(message))
-        if opcode[0] == 0:  # Tilt_WPM_Opcode
-            tiltSpeed = unpack(">h", message)
-            speed_dict = {-5: -43, -4: -32, -2: -24, -1: -16, 0: 0, 1: 12, 2: 18, 4: 24, 5: 36}
-            self._tiltMotor.setTilt(int(speed_dict.get(tiltSpeed[0])/4))
         if opcode[0] == 5:  # SHOOT
             asyncio.create_task(self._shoot())
 

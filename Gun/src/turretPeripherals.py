@@ -39,26 +39,7 @@ class SerialCommunicator:
                 self.message = bytearray()
                 self.opcode = bytearray()
             await asyncio.sleep(0.1)
-
-
-class TiltMotor():
-    def __init__(self, pwmTiltPin: int):
-        self.pin = pwmTiltPin
-        # Init to standstill
-        self.pwm = PWM(Pin(self.pin),freq=50,duty=77)
-
-    def setTilt(self,tiltSpeed):
-        # Set upper and lower bounds
-        tiltSpeed = 25 if tiltSpeed > 25 else tiltSpeed
-        tiltSpeed = -26 if tiltSpeed < -26 else tiltSpeed
-        # rewrite to correct period
-        period = tiltSpeed + 77
-        print("Setting tilt perdio: " + str(period))
-        self.pwm.duty(period)
-
-    def __del__(self):
-        self.pwm.deinit()
-
+            
 class MotionDetector:
     def __init__(self, motionDetectorPins: list):
         # Initiate pins
