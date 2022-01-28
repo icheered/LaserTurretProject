@@ -235,7 +235,7 @@ class Turret(_Gun):
             speed_dict = {-5: -43, -4: -32, -2: -24, -1: -16, 0: 0, 1: 12, 2: 18, 4: 24, 5: 36}
             self._tiltMotor.setTilt(int(speed_dict.get(tiltSpeed[0])/4))
         if opcode[0] == 5:  # SHOOT
-            await self._shoot()
+            asyncio.create_task(self._shoot())
 
     async def _shoot(self):
         print("Shooting")

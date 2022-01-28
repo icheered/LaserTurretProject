@@ -53,6 +53,7 @@ class TiltMotor():
         tiltSpeed = -26 if tiltSpeed < -26 else tiltSpeed
         # rewrite to correct period
         period = tiltSpeed + 77
+        print("Setting tilt perdio: " + str(period))
         self.pwm.duty(period)
 
     def __del__(self):

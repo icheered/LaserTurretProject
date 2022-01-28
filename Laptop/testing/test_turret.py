@@ -6,10 +6,10 @@ from multiprocessing import Queue
 
 
 class TestTurret(unittest.TestCase):
-    messenger = Messenger()
+    pan_messenger = Messenger("/dev/ttyACM0")
     motion_queue = Queue()
-    targeter = Targeter(None, motion_queue, None, messenger)
-    turret = OutputToTurret(messenger)
+    targeter = Targeter(None, motion_queue, None, None, pan_messenger, None)
+    turret = OutputToTurret(pan_messenger, None)
 
     def test_turret_rotate_from_motion(self):
         dirs = [Direction.NORTH, Direction.SOUTH, Direction.SOUTHEAST, Direction.EAST, Direction.NORTHEAST,
@@ -24,9 +24,9 @@ class TestTurret(unittest.TestCase):
             i += 1
 
     def test_turret_rotate_by_relative_angle(self):
+        time.sleep(1)
         for i in range(10):
             time.sleep(1)
-
             self.targeter.turret.pan_relative_angle(45)
             time.sleep(1)
             self.targeter.turret.pan_relative_angle(45)

@@ -9,15 +9,20 @@ class OutputToTurret:
     def __init__(self, pan_messenger, tilt_messenger):
         self.pan_messenger = pan_messenger
         self.tilt_messenger = tilt_messenger
+        self.last_pan = None
+        self.last_tilt = None
+        self.fire_bytes = int.to_bytes(5, 1, 'big') + int.to_bytes(0, 2, 'big')
 
     def pan_send(self, output):
         """Send command over serial port to laser turret.  Used for controlling
         actions of the turret.
         :param output: 3 byte command where byte #1 = opcode & byte #2 = control value """
         self.pan_messenger.send(output)
+        print(f"pan: {output}")
 
     def tilt_send(self, output):
         self.tilt_messenger.send(output)
+        print(f"Tilt send: {output}")
 
     def tilt_at_speed(self, speed):
         """Turret control command to tilt at a certain speed.
@@ -26,7 +31,7 @@ class OutputToTurret:
         If speed = 0: stop previous tilt command.
         Speed values below 5 will result in stop due to limitation of motor.
         :param speed: int value between -100 and 100, equates to percentage of full speed"""
-        self.tilt_send(int.to_bytes(0, 1, 'big') + speed.to_bytes(2, 'big', signed= True))
+        self.tilt_send(int.to_bytes(0, 1, 'big') + speed.to_bytes(2, 'big', signed=True))
 
     def tilt_special(self, command):
         """Turret control command to tilt turret to one of 2 specified positions.
@@ -49,8 +54,9 @@ class OutputToTurret:
         to its current position.  Negative angles equate to rotating left.  Positive
         angles equate to rotating right.
         :param angle: the angle to turn from current position"""
-        angle = int(angle // 1.8)
-        self.pan_send(int.to_bytes(3, 1, 'big') + angle.to_bytes(2, 'big', signed=True))
+        angle = int(angle / 1.8)
+        command = int.to_bytes(3, 1, 'big') + angle.to_bytes(2, 'big', signed=True)
+        self.pan_send(command)
 
     def pan_absolute_angle(self, direction):
         """Turret control command to rotate to the specified angle relative to the preset

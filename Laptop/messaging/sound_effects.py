@@ -66,3 +66,8 @@ def play_target_lost_sound(last_sound_time):
         return time.time()
     else:
         return last_sound_time
+
+
+def play_stop_sound():
+    sound_clip = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'Sounds', 'thats-it-man-game-over-man!-game-over!.wav'))
+    play_file(sound_clip)
