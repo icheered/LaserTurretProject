@@ -213,7 +213,7 @@ ISR(TIMER2_COMPA_vect) {
   count++;
   // write current output values to pins
   digitalWrite(pulsePin, nextOutput);
-  digitalWrite(dirPin, nextDir);
+  digitalWrite(dirPin, !nextDir);
   // reset counter if limit is achieved, and set next output to HIGH
   if (nextOutput == 1 && count <=4) {
     nextOutput = 1;
@@ -247,6 +247,7 @@ ISR(TIMER2_COMPA_vect) {
     angleControlAbs();
   }
   if (nextDir != direction && dirChangeTimeout == false) {
+    // Add delay after switching directions
     count -= 1000;
     dirChangeTimeout = true;
   }
