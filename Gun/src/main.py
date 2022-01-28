@@ -38,7 +38,7 @@ async def main():
             vibratorPin=VIBRATOR,
             rgbledPin=RGBLED,
             screenSCL=SCREENSCL,
-            screenSDA=SCREENSDA
+            screenSDA=SCREENSDA,
         )
     else:
         print("Creating turret")

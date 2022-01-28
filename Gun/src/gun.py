@@ -61,6 +61,7 @@ class HandGun(_Gun):
             team: int = 0,
             lives: int = 0,
             maxAmmo: int = 0,
+            *args,
     ):
         super().__init__(id=id, team=team)
 
@@ -88,9 +89,8 @@ class HandGun(_Gun):
         self._brightness = 255
         self._updateTeamColor()
 
-        DEFAULT_I2C_ADDR = 0x27
         i2c = SoftI2C(sda=Pin(screenSDA), scl=Pin(screenSCL))
-        self.lcd = I2cLcd(i2c=i2c, i2c_addr=DEFAULT_I2C_ADDR, num_lines=2, num_columns=16)
+        self.lcd = I2cLcd(i2c=i2c, i2c_addr=i2c.scan()[0], num_lines=2, num_columns=16)
 
         self._reloading = False
         self._updateDisplays()
