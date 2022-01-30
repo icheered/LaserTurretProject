@@ -2,14 +2,14 @@
 Gun object that holds the user's state (lives, ammo, team)
 """
 import time
+from struct import unpack
+
 import machine
 import neopixel
 import uasyncio as asyncio
-from struct import unpack
-from lcd.i2c_lcd import I2cLcd
-import time
-from machine import SoftI2C, Pin
+from machine import Pin, SoftI2C
 
+from lcd.i2c_lcd import I2cLcd
 from primitives.pushbutton import Pushbutton
 from turretPeripherals import MotionDetector, SerialCommunicator
 
@@ -49,19 +49,19 @@ class _Gun:
 
 class HandGun(_Gun):
     def __init__(
-            self,
-            id: int,
-            triggerPin: int,
-            reloadPin: int,
-            laserPin: int,
-            vibratorPin: int,
-            rgbledPin: int,
-            screenSCL: int,
-            screenSDA: int,
-            team: int = 0,
-            lives: int = 0,
-            maxAmmo: int = 0,
-            *args,
+        self,
+        id: int,
+        triggerPin: int,
+        reloadPin: int,
+        laserPin: int,
+        vibratorPin: int,
+        rgbledPin: int,
+        screenSCL: int,
+        screenSDA: int,
+        team: int = 0,
+        lives: int = 0,
+        maxAmmo: int = 0,
+        *args,
     ):
         super().__init__(id=id, team=team)
 
@@ -87,7 +87,7 @@ class HandGun(_Gun):
         self.neoPixel = neopixel.NeoPixel(machine.Pin(rgbledPin), 8)
 
         self._brightness = 255
-        self._updateTeamColor()
+        asyncio.create_task(self._updateTeamColor())
 
         i2c = SoftI2C(sda=Pin(screenSDA), scl=Pin(screenSCL))
         self.lcd = I2cLcd(i2c=i2c, i2c_addr=i2c.scan()[0], num_lines=2, num_columns=16)
@@ -97,8 +97,15 @@ class HandGun(_Gun):
 
     def _updateDisplays(self):
         self.lcd.clear()
-        self.lcd.putstr("Ammo: "+str(self._ammo)+ "/" + str(self._maxAmmo) + " \nLives: " + str(self._lives))
-    
+        self.lcd.putstr(
+            "Ammo: "
+            + str(self._ammo)
+            + "/"
+            + str(self._maxAmmo)
+            + " \nLives: "
+            + str(self._lives)
+        )
+
     async def _tempDisplay(self, text: str, duration: int = 3):
         self.lcd.clear()
         self.lcd.putstr(text)
@@ -107,20 +114,27 @@ class HandGun(_Gun):
 
     async def _updateTeamColor(self):
         if self._team == 0:
-            self._set_led(self._brightness, self._brightness, self._brightness) # White
+            self._set_led(self._brightness, self._brightness, self._brightness)  # White
         elif self._team == 1:
-            self._set_led(self._brightness, 0, 0) # Red
+            self._set_led(self._brightness, 0, 0)  # Red
         elif self._team == 2:
-            self._set_led(0, 0, self._brightness) # Blue
+            self._set_led(0, 0, self._brightness)  # Blue
         elif self._team == 3:
-            self._set_led(0, self._brightness, 0) # Green
+            self._set_led(0, self._brightness, 0)  # Green
         else:
             print("Team color is not defined")
-        
-        asyncio.create_task(self._tempDisplay(text="Team: " + str(self._team) + "\n Brightness: " + str(self._brightness)))
-        
+
+        asyncio.create_task(
+            self._tempDisplay(
+                text="Team: "
+                + str(self._team)
+                + "\n Brightness: "
+                + str(self._brightness)
+            )
+        )
 
     def _set_led(self, r, g, b):
+        print("Setting LED. R: " + str(r) + ", G: " + str(g) + ", B: " + str(b))
         self.neoPixel.fill((r, g, b))
         self.neoPixel.write()
 
@@ -143,6 +157,8 @@ class HandGun(_Gun):
             return
         if self._lives < 1:
             await self._handleDead()
+            return
+        if self._reloading:
             return
         asyncio.create_task(self._doVibration(0.2))
         asyncio.create_task(self._doLaser(0.5))
@@ -184,8 +200,10 @@ class HandGun(_Gun):
         if self._lives < 1:
             await self._handleDead()
             return
-        
-        asyncio.create_task(self._tempDisplay(text="Got hit by team: " + str(team), duration=2))
+
+        asyncio.create_task(
+            self._tempDisplay(text="Got hit by team: " + str(team), duration=2)
+        )
 
         self._lives -= 1
         self._updateDisplays()
@@ -205,7 +223,7 @@ class HandGun(_Gun):
             self._lives = value
             print("Lives set to: " + str(self._lives))
             self._updateDisplays()
-        elif command == 3: # Handle setting LED brightness
+        elif command == 3:  # Handle setting LED brightness
             self._brightness = value
             print("Brightness set to: " + str(self._brightness))
             await self._updateTeamColor()
@@ -219,11 +237,15 @@ class HandGun(_Gun):
 
     async def _handleOutOfAmmo(self):
         # TODO Play sound or blink LED or something
-        asyncio.create_task(self._tempDisplay(text="Out of ammo!\nClick reload", duration=1))
+        asyncio.create_task(
+            self._tempDisplay(text="Out of ammo!\nClick reload", duration=1)
+        )
         print("Out of ammo")
 
     async def _handleDead(self):
-        asyncio.create_task(self._tempDisplay(text="You're dead!\nGo get a life!", duration=10))
+        asyncio.create_task(
+            self._tempDisplay(text="You're dead!\nGo get a life!", duration=10)
+        )
         print("You're dead")
         await self._doVibration(10)
 

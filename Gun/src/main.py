@@ -10,16 +10,17 @@ from turretPeripherals import SerialCommunicator
 
 # Pin definitions
 TURRET = 23  # If tied to ground ESP is turret, else Handgun
-TRIGGER = 26  # Shooting      (Handgun only)
-RELOAD = 27  # Reloading     (Handgun only)
-MOTION = [32,33,34,35]  # Motion detection          (Turret only)
-TRANSMIT = 12  # IR Tranmitter pin
-RECEIVE = 14  # IR Receiver pin
-LASER = 16  # Laser diode
-VIBRATOR = 17  # Vibration motor
-RGBLED = 18 # RGB LED
-SCREENSDA = 21 # LCD Display data line
-SCREENSCL = 22 # LCD Display clock line
+TRIGGER = 33  # Shooting      (Handgun only)
+RELOAD = 35  # Reloading     (Handgun only)
+MOTION = [32, 33, 34, 35]  # Motion detection          (Turret only)
+TRANSMIT = 4  # IR Tranmitter pin
+RECEIVE = 0  # IR Receiver pin
+LASER = 15  # Laser diode
+VIBRATOR = 32  # Vibration motor
+RGBLED = 2  # RGB LED
+SCREENSDA = 25  # LCD Display data line
+SCREENSCL = 26  # LCD Display clock line
+
 
 async def main():
     userID = random.randint(100, 65535)
