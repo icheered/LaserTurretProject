@@ -119,7 +119,7 @@ class Targeter(multiprocessing.Process):
         If not offline look for RGB beacon for targeting. If beacon_found then fire
         at the beacon.  If no beacons within view look for human.  If human_found
         follow that human.  Choose the closest target."""
-        cap = cv2.VideoCapture(2)
+        cap = cv2.VideoCapture(4)
         self.last_sound_time = time.time()
         self.pan_time_stamp = time.time()
         time_set = time.time()
@@ -128,8 +128,12 @@ class Targeter(multiprocessing.Process):
             if time.time() - self.start_time >= game_time or self.lives == 0:
                 print("game over")
                 play_stop_sound()
+                self.move_turret(0, 0)
                 return False
-   
+            else:
+                #print("running")
+                pass
+            #print("loop")
             #self.targets.clear()
             self.detections.clear()
             beacon_found = False
@@ -158,8 +162,6 @@ class Targeter(multiprocessing.Process):
                         self.last_sound_time = play_target_detected_sound(self.last_sound_time)
                     self.last_target_count = len(self.targets)
                     x, y, w, h, area = self.determine_closest()
-                    cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 3)
-                    cv2.circle(frame, (320, 240), 5, (0, 255, 0), -1)
                     center_x = x + w//2
                     center_y = y + h//2
                     cv2.circle(frame, (center_x, center_y), 5, (0, 255, 0), -1)
@@ -170,12 +172,16 @@ class Targeter(multiprocessing.Process):
                     if abs(get_x_speed(x_error)) < 5 and abs(y_error) < 49 and beacon_found:
                         self.move_turret(0, 0)
                         self.fire()
+                        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 3)
+                        cv2.circle(frame, (320, 240), 5, (0, 0, 255), -1)
                         print("fire")
                         self.count_shot_since_motion_move += 1
                         if self.count_shot_since_motion_move == len(self.targets):
                             self.shot_all = True
                     else:
                         self.move_turret(x_error, y_error)
+                        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 3)
+                        cv2.circle(frame, (320, 240), 5, (0, 255, 0), -1)
                         pass
                     '''else:
                         if self.last_target_count > 0:
@@ -312,7 +318,6 @@ class Targeter(multiprocessing.Process):
         tracking a target.
         :param direction: enum value from data.values.py - Direction"""
         self.last_move_time = time.time()
-        print(f"Direction.value: {direction}")
         self.turret.pan_absolute_angle(direction)
         self.pan_time_stamp = time.time()
         self.pan_status = PanningOscillation.CENTER
