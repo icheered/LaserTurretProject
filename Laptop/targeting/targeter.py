@@ -83,12 +83,13 @@ def get_y_speed(y_error):
 
 class Targeter(multiprocessing.Process):
 
-    def __init__(self, command_queue, motion_queue, hit_queue, colors, pan_messenger, tilt_messenger):
+    def __init__(self, command_queue, motion_queue, hit_queue, colors, pan_messenger, tilt_messenger, fire_messenger):
         multiprocessing.Process.__init__(self)
         self.tracker = EuclideanDistTracker()
         self.pan_messenger = pan_messenger
         self.tilt_messenger = tilt_messenger
-        self.turret = OutputToTurret(self.pan_messenger, self.tilt_messenger)
+        self.fire_messenger = fire_messenger
+        self.turret = OutputToTurret(self.pan_messenger, self.tilt_messenger, self.fire_messenger)
         self.command_queue = command_queue
         self.motion_queue = motion_queue
         self.hit_queue = hit_queue
@@ -100,6 +101,7 @@ class Targeter(multiprocessing.Process):
         self.last_move_time = None
         self.last_sound_time = None
         self.last_move_command = None
+        self.last_fire = None
         self.count_shot_since_motion_move = 0
         self.shot_all = False
         self.status = Status.READY
@@ -137,10 +139,6 @@ class Targeter(multiprocessing.Process):
             #self.targets.clear()
             self.detections.clear()
             beacon_found = False
-            if time.time() - time_set >= 5:
-                time_set = time.time()
-                self.turret.pan_absolute_angle(Direction.NORTH)
-                self.pan_status = PanningOscillation.CENTER
             if self.status.value == Status.READY.value:
                 _, frame = cap.read()
                 self.find_beacon(frame)
@@ -171,7 +169,9 @@ class Targeter(multiprocessing.Process):
                     #print("x_error: %5.2f, y_error: %5.2f" %(x_error, y_error))
                     if abs(get_x_speed(x_error)) < 5 and abs(y_error) < 49 and beacon_found:
                         self.move_turret(0, 0)
-                        self.fire()
+                        if self.last_fire is None or time.time() - self.last_fire > 0.5:
+                            #self.fire()
+                            self.last_fire = time.time()
                         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 3)
                         cv2.circle(frame, (320, 240), 5, (0, 0, 255), -1)
                         print("fire")
@@ -282,7 +282,7 @@ class Targeter(multiprocessing.Process):
             for cnt in contours:
                 # Calculate area and remove small elements
                 area = cv2.contourArea(cnt)
-                if area > 100:
+                if area > 10:
                     # cv2.drawContours(frame, [cnt], -1, (0, 255, 0), 2)
                     x, y, w, h = cv2.boundingRect(cnt)
                     self.detections.append([x, y, w, h, w*h])
@@ -346,7 +346,7 @@ class Targeter(multiprocessing.Process):
             self.move_turret(0,0)
             play_hit_sound(None)
             self.turret.tilt_at_speed(-1)
-            time.sleep(1.6)
+            time.sleep(2.2)
             self.turret.tilt_at_speed(0)
             time.sleep(5)
             self.turret.tilt_at_speed(4)

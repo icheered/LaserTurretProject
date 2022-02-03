@@ -26,13 +26,13 @@ def build_target_colors():
     :returns: list of team_color objects"""
     colors_list = []
     green = TeamColor("green")
-    green.set_lower_hsv([44,88,128])
-    green.set_upper_hsv([71, 201, 255])
-    colors_list.append(green)
+    green.set_lower_hsv([12,175,218])
+    green.set_upper_hsv([98, 255, 255])
+    #colors_list.append(green)
     green_gun = TeamColor("ggreen")
-    green_gun.set_lower_hsv([44,35,190])
-    green_gun.set_lower_hsv([69,255,255])
-    #colors_list.append(green_gun)
+    green_gun.set_lower_hsv([15,173,245])
+    green_gun.set_upper_hsv([101,255,255])
+    colors_list.append(green_gun)
     yellow = TeamColor("yellow")
     yellow.set_lower_hsv([8, 107, 106])
     yellow.set_upper_hsv([311, 230, 255])
@@ -56,7 +56,7 @@ if __name__ == '__main__':
     pan_messenger = Messenger("/dev/ttyACM0")
     tilt_messenger = Messenger("/dev/ttyUSB0")
     input_messenger = Messenger("/dev/ttyUSB1")
-    targeter = Targeter(command_queue, motion_queue, hit_queue, colors, pan_messenger, tilt_messenger)
+    targeter = Targeter(command_queue, motion_queue, hit_queue, colors, pan_messenger, tilt_messenger, input_messenger)
     targeter.daemon = True
     targeter.start()
     play_start_sound(None)

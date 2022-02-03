@@ -6,9 +6,10 @@ from Laptop.data.values import Status, Direction
 
 
 class OutputToTurret:
-    def __init__(self, pan_messenger, tilt_messenger):
+    def __init__(self, pan_messenger, tilt_messenger, fire_messenger):
         self.pan_messenger = pan_messenger
         self.tilt_messenger = tilt_messenger
+        self.fire_messenger = fire_messenger
         self.last_pan = None
         self.last_tilt = None
         self.fire_bytes = int.to_bytes(5, 1, 'big') + int.to_bytes(0, 2, 'big')
@@ -18,11 +19,11 @@ class OutputToTurret:
         actions of the turret.
         :param output: 3 byte command where byte #1 = opcode & byte #2 = control value """
         self.pan_messenger.send(output)
-        #print(f"pan: {output}")
+        print(f"pan: {output}")
 
     def tilt_send(self, output):
         self.tilt_messenger.send(output)
-        #print(f"Tilt send: {output}")
+        print(f"Tilt send: {output}")
 
     def tilt_at_speed(self, speed):
         """Turret control command to tilt at a certain speed.
@@ -64,11 +65,11 @@ class OutputToTurret:
         West and 50 is East
         :param direction: enum value from data.values.py - Direction"""
         value = direction.value
-        print(value)
+        #print(value)
         command = int.to_bytes(4, 1, 'big') + int(value).to_bytes(2, 'big', signed=True)
-        print(command)
+        #print(command)
         self.pan_send(command)
 
     def fire(self):
         """Turret control command to fire laser at current target.  Checks if turret is offline first."""
-        self.tilt_send(int.to_bytes(5, 1, 'big') + int.to_bytes(0, 2, 'big'))
+        self.fire_messenger.send(int.to_bytes(5, 1, 'big') + int.to_bytes(0, 2, 'big'))

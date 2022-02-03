@@ -17,9 +17,9 @@ cap = cv2.VideoCapture(4)
 # Trackbar window for dialing in color detection
 cv2.namedWindow("Trackbars")
 
-cv2.createTrackbar("L - H", "Trackbars", 0, 360, nothing)
-cv2.createTrackbar("L - S", "Trackbars", 0, 255, nothing)
-cv2.createTrackbar("L - V", "Trackbars", 0, 255, nothing)
+cv2.createTrackbar("L - H", "Trackbars", 15, 360, nothing)
+cv2.createTrackbar("L - S", "Trackbars", 175, 255, nothing)
+cv2.createTrackbar("L - V", "Trackbars", 218, 255, nothing)
 cv2.createTrackbar("U - H", "Trackbars", 360, 360, nothing)
 cv2.createTrackbar("U - S", "Trackbars", 255, 255, nothing)
 cv2.createTrackbar("U - V", "Trackbars", 255, 255, nothing)
@@ -38,8 +38,8 @@ while True:
     u_v = cv2.getTrackbarPos("U - V", "Trackbars")
 
     # set bounds of color to detect in HSV
-    lower_blue = np.array([l_h, l_s, l_v])
-    upper_blue = np.array([u_h, u_s, u_v])
+    lower_blue = np.array([l_h,l_s,l_v])
+    upper_blue = np.array([u_h,u_s,u_v])
 
     # window to show masking - black where colors outside bounds
     mask = cv2.inRange(hsv, lower_blue, upper_blue)
@@ -53,10 +53,10 @@ while True:
     for cnt in contours:
         # Calculate area and remove small elements
         area = cv2.contourArea(cnt)
-        if area > 1000:
+        if area > 10:
             # cv2.drawContours(frame, [cnt], -1, (0, 255, 0), 2)
             x, y, w, h = cv2.boundingRect(cnt)
-
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 3)
             detections.append([x, y, w, h])
     cv2.imshow("frame", frame)
     cv2.imshow("mask", mask)
