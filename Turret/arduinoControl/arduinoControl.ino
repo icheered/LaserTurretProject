@@ -55,26 +55,23 @@ void loop() {
       incomingByte[i] = Serial.read();
     }
     noInterrupts();
-    // check operation mode (speed or absolute angle)
+    // check operation mode (speed or absolute/relative angle)
     opMode = incomingByte[0];
-
     // retreive send value (16 bits)
     if (opMode == PAN_SPEED) {
       setValue = (incomingByte[1]<<8) + (incomingByte[2]); 
-      //Serial.println(setValue);
     } else if (opMode == PAN_ANGLE_ABS) {
       setAngle = (incomingByte[1]<<8) + (incomingByte[2]); 
       braking = false;
-      //Serial.println(setAngle);
     } else if (opMode == PAN_ANGLE_REL) {
       braking = false;
       setAngle = angle + (incomingByte[1]<<8) + (incomingByte[2]); 
-      //Serial.println(setAngle);
     }
     interrupts();
   }
 }
 
+// Conservative approximation on how many steps are required to stop
 int stepsToStop() {
   int calcValue = ((speed*speed) / 72);
   return calcValue; // 2083/15
@@ -84,8 +81,9 @@ int stepsToStop() {
 bool approachingLimits(byte operationMode) {
   // calculate steps left
   stepsLeft = maxAngle - abs(angle);
-  // check if allready at max
+  // check if allready at angle limits and in speed control mode
   if (stepsLeft <= 0 && operationMode == PAN_SPEED) {
+    // if wanting to move in opposite direction return false, else true
     if (angle > 0 && setValue < 0) {
       return false;
     } else if (angle < 0 && setValue > 0) {
@@ -95,12 +93,14 @@ bool approachingLimits(byte operationMode) {
       return true;
     }
   }
+  // check if allready at angle limits and in angle control mode
   if (stepsLeft <= 0 && (operationMode == PAN_ANGLE_ABS || operationMode == PAN_ANGLE_REL)) {
+    // check if set angle lies within maximum limits
     if (abs(setAngle) < maxAngle) {
       return false;
     }
   }
-  // if stopped, return false
+  // if stopped, return false (no need to stop)
   if (speed == 0) {
     return false;
   }
@@ -119,7 +119,7 @@ bool approachingLimits(byte operationMode) {
 
 
 
-// Maximum deceleration function
+// Maximum acceleration function
 // int 0 means ccw, 1 means cw
 void maxAccelerate(int rotDirection) {
   if (rotDirection == 1) {
@@ -137,20 +137,20 @@ void maxAccelerate(int rotDirection) {
   nextCountLim = nextSpeed != 0 ? COUNT_LIM_NUMERATOR/abs(nextSpeed) : COUNT_LIM_NUMERATOR/MIN_SPEED;
 }
 
+// make the turret stop to zero with maximum deceleration
 void stopToZero() {
   if (direction == 1) {
     nextSpeed = speed - (countLim / ACCEL_CONSTANT) - 1;
     if (nextSpeed < MIN_SPEED) nextSpeed = 0;
-    //nextSpeed = (speed - maxAcceleration) > 10 ? speed - maxAcceleration : 0;
   } else if (direction == 0) {
     nextSpeed = speed + (countLim / ACCEL_CONSTANT) + 1;
     if (nextSpeed > -MIN_SPEED) nextSpeed = 0;
-    //nextSpeed = (speed + maxAcceleration) < -10 ? speed + maxAcceleration : 0;
   }
   nextDir = direction;
   nextCountLim = nextSpeed != 0 ? COUNT_LIM_NUMERATOR/abs(nextSpeed) : COUNT_LIM_NUMERATOR/MIN_SPEED;
 }
 
+// Go to specific speed value (for last step in acceleration)
 void accelerateToValue(int accelValue) {
   nextSpeed = accelValue;
   nextDir = accelValue > 0 ? 1 : 0;
@@ -201,10 +201,6 @@ void angleControlAbs() {
 }
 
 
-//ISR(TIMER2_OVF_vect) {
-//  count = count + 1;
-//}
-
 // 6.25Khz timer interrupt
 ISR(TIMER2_COMPA_vect) {
   static bool dirChangeTimeout;
@@ -218,16 +214,15 @@ ISR(TIMER2_COMPA_vect) {
   if (nextOutput == 1 && count <=4) {
     nextOutput = 1;
   }
+  // check if count limit is reached, and if a new pulse needs to be generated
   else if (count >= countLim) {
     dirChangeTimeout = false;
-    //Serial.println(setValue);
     count = 0;
     countLim = nextCountLim;
     // check to prevent motor pulse if allready standing still
     nextOutput = ((speed == nextSpeed) && (nextSpeed == 0)) ? 0 : 1;
     if (!((speed == nextSpeed) && (nextSpeed == 0))) {
       angle = (nextDir == 1) ? angle + 1 : angle - 1;
-      //Serial.println(nextSpeed);
     }
     speed = nextSpeed;
     direction = nextDir;
