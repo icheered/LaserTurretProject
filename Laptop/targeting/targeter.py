@@ -4,14 +4,10 @@ from Laptop.messaging.output_to_turret import OutputToTurret
 from Laptop.data.values import Status, Direction, PanningOscillation
 
 from Laptop.messaging.sound_effects import *
-from tracker import *
 import cv2
 import multiprocessing
 import time
-from exceptions.InvalidDirectionException import InvalidDirectionException
-from messaging.sound_effects import *
 import math
-from Laptop.exceptions.InvalidDirectionException import InvalidDirectionException
 
 cascPath = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'haarcascade_frontalface.xml'))
 faceCascade = cv2.CascadeClassifier(cascPath)
@@ -85,7 +81,6 @@ class Targeter(multiprocessing.Process):
 
     def __init__(self, command_queue, motion_queue, hit_queue, colors, pan_messenger, tilt_messenger, fire_messenger):
         multiprocessing.Process.__init__(self)
-        self.tracker = EuclideanDistTracker()
         self.pan_messenger = pan_messenger
         self.tilt_messenger = tilt_messenger
         self.fire_messenger = fire_messenger
