@@ -1,4 +1,6 @@
 # LaserTurretProject
 Laser guns and turrets pew pew
 
-This code is hereby official property of Tjeerd Bakker and overrules all other/hierarchical mentions of alternative ownership are hereby void.
+This repository contains all artifacts from the CPS project. 
+In the different directories the code related to that part of the turret is included. 
+Also the used models are uploaded
