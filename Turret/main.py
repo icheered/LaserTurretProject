@@ -11,6 +11,7 @@ tiltSpeed = 0
 
 p = select.poll()
 p.register(sys.stdin)
+speed_dict = {-5: -43, -4: -32, -2: -24, -1: -16, 0: 0, 1: 12, 2: 18, 4: 24, 5: 36}
 opcode = bytearray()
 message = bytearray()
 count = 0
@@ -25,6 +26,6 @@ while True:
 		print(message)
 		if (opcode[0] == TILT_PWM_OPCODE):
 			tiltSpeed = unpack('>h', message)
-			tiltMotor.setTilt(int(tiltSpeed[0]/4))
+			tiltMotor.setTilt(int(speed_dict.get(tiltSpeed[0])/4))
 		count = 0
 		message = bytearray()
