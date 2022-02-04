@@ -1,5 +1,6 @@
 """codeauthor:: Brand Hauser
-Class for playing sound effects based on the current activity in the game."""
+Class for playing sound effects based on the current activity in the game.
+Sound clips from mixkit.co and zapsplat.com"""
 
 import random
 

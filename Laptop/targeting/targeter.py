@@ -168,6 +168,8 @@ class Targeter(multiprocessing.Process):
                     #print("x: %2d, y: %2d" % (center_x, center_y))
                     #print("x_error: %5.2f, y_error: %5.2f" %(x_error, y_error))
                     if abs(get_x_speed(x_error)) < 5 and abs(y_error) < 49 and beacon_found:
+                        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 3)
+                        cv2.circle(frame, (320, 240), 5, (0, 0, 255), -1)
                         self.move_turret(0, 0)
                         if self.last_fire is None or time.time() - self.last_fire > 0.5:
                             #self.fire()
@@ -179,6 +181,8 @@ class Targeter(multiprocessing.Process):
                         if self.count_shot_since_motion_move == len(self.targets):
                             self.shot_all = True
                     else:
+                        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 3)
+                        cv2.circle(frame, (320, 240), 5, (0, 255, 0), -1)
                         self.move_turret(x_error, y_error)
                         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 3)
                         cv2.circle(frame, (320, 240), 5, (0, 255, 0), -1)
