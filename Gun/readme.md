@@ -18,3 +18,16 @@ Displaying data ideas
 - OLED / LCD screen (needs a lot of pins)
 - Indicator LEDS (needs multiple pins)
 - Bluetooth and phone (need a lot of programming and gun re-design)
+
+
+
+#### Installation
+This directory uses Poetry for dependency management. Poetry can be installed using your system's package manager but it is recommended to use [the official install script](https://python-poetry.org/docs/#installation).
+
+```bash
+# Initiate virtual environment
+$ poetry shell
+
+# Install the dependencies
+$ poetry install
+```
